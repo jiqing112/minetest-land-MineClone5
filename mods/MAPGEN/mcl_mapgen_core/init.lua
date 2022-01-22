@@ -1113,7 +1113,7 @@ local function register_mgv6_decorations()
 
 end
 
-local mg_flags = minetest.settings:get_flags("mg_flags")
+local mg_flags = minetest.settings.get_flags and minetest.settings:get_flags("mg_flags") or {}
 
 -- Inform other mods of dungeon setting for MCL2-style dungeons
 mcl_vars.mg_dungeons = mcl_mapgen.dungeons

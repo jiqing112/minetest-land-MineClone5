@@ -45,7 +45,7 @@ local function update_player(player_object)
 
 	local player_data = {
 		pos = pos,
-		velocity = player_object:get_velocity(),
+		velocity = player_object:get_velocity() or player_object:get_player_velocity(),
 		air = air
 	}
 
@@ -92,7 +92,7 @@ local function check_player(name)
 		if not obj_player then
 			kick_player(name, "flights")
 		end
-		local velocity = obj_player:get_velocity()
+		local velocity = obj_player:get_velocity() or obj_player:get_player_velocity()
 		local pos = obj_player:get_pos()
 		local x, y, z = floor(pos.x), floor(pos.y), floor(pos.z)
 		while (     get_node({x = x    , y = y, z = z    }).name == "air"
