@@ -1,6 +1,46 @@
 local mods_loaded = false
 local NIGHT_VISION_RATIO = 0.45
 
+local function set_sky(player, def)
+	if player.set_sun then
+		-- new api
+		player:set_sky(def)
+	else
+		-- TODO
+		-- old api
+	end
+end
+
+local function set_sun(player, def)
+	if player.set_sun then
+		-- new api
+		player:set_sun(def)
+	else
+		-- TODO
+		-- old api
+	end
+end
+
+local function set_moon(player, def)
+	if player.set_sun then
+		-- new api
+		player:set_moon(def)
+	else
+		-- TODO
+		-- old api
+	end
+end
+
+local function set_stars(player, def)
+	if player.set_sun then
+		-- new api
+		player:set_stars(def)
+	else
+		-- TODO
+		-- old api
+	end
+end
+
 mcl_weather.skycolor = {
 	-- Should be activated before do any effect.
 	active = true,
@@ -83,7 +123,7 @@ mcl_weather.skycolor = {
 			if dim == "overworld" then
 				if (mcl_weather.state == "none") then
 					-- Clear weather
-					player:set_sky({
+					set_sky(player, {
 						type = "regular",
 						sky_color = {
 							day_sky = "#92B9FF",
@@ -95,16 +135,17 @@ mcl_weather.skycolor = {
 						},
 						clouds = true,
 					})
-					player:set_sun({visible = true, sunrise_visible = true})
-					player:set_moon({visible = true})
-					player:set_stars({visible = true})
+					set_sun(player, {visible = true, sunrise_visible = true})
+					set_moon(player, {visible = true})
+					set_stars(player, {visible = true})
 					mcl_weather.skycolor.override_day_night_ratio(player, nil)
 				else
 					-- Weather skies
 					local day_color = mcl_weather.skycolor.get_sky_layer_color(0.5)
 					local dawn_color = mcl_weather.skycolor.get_sky_layer_color(0.75)
 					local night_color = mcl_weather.skycolor.get_sky_layer_color(0)
-					player:set_sky({ type = "regular",
+					set_sky(player, {
+						type = "regular",
 						sky_color = {
 							day_sky = day_color,
 							day_horizon = day_color,
@@ -115,9 +156,9 @@ mcl_weather.skycolor = {
 						},
 						clouds = true,
 					})
-					player:set_sun({visible = false, sunrise_visible = false})
-					player:set_moon({visible = false})
-					player:set_stars({visible = false})
+					set_sun(player, {visible = false, sunrise_visible = false})
+					set_moon(player, {visible = false})
+					set_stars(player, {visible = false})
 
 					local lf = mcl_weather.get_current_light_factor()
 					if mcl_weather.skycolor.current_layer_name() == "lightning" then
@@ -136,32 +177,35 @@ mcl_weather.skycolor = {
 				end
 			elseif dim == "end" then
 				local t = "mcl_playerplus_end_sky.png"
-				player:set_sky({ type = "skybox",
+				set_sky(player, {
+					type = "skybox",
 					base_color = "#000000",
 					textures = {t,t,t,t,t,t},
 					clouds = false,
 				})
-				player:set_sun({visible = false , sunrise_visible = false})
-				player:set_moon({visible = false})
-				player:set_stars({visible = false})
+				set_sun(player, {visible = false , sunrise_visible = false})
+				set_moon(player, {visible = false})
+				set_stars(player, {visible = false})
 				mcl_weather.skycolor.override_day_night_ratio(player, 0.5)
 			elseif dim == "nether" then
-				player:set_sky({ type = "plain",
+				set_sky(player, {
+					type = "plain",
 					base_color = "#300808",
 					clouds = false,
 				})
-				player:set_sun({visible = false , sunrise_visible = false})
-				player:set_moon({visible = false})
-				player:set_stars({visible = false})
+				set_sun(player, {visible = false , sunrise_visible = false})
+				set_moon(player, {visible = false})
+				set_stars(player, {visible = false})
 				mcl_weather.skycolor.override_day_night_ratio(player, nil)
 			elseif dim == "void" then
-				player:set_sky({ type = "plain",
+				set_sky(player, {
+					type = "plain",
 					base_color = "#000000",
 					clouds = false,
 				})
-				player:set_sun({visible = false, sunrise_visible = false})
-				player:set_moon({visible = false})
-				player:set_stars({visible = false})
+				set_sun(player, {visible = false, sunrise_visible = false})
+				set_moon(player, {visible = false})
+				set_stars(player, {visible = false})
 			end
 		end
 	end,
