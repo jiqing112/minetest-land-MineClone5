@@ -124,12 +124,12 @@ minetest.register_globalstep(function(dtime)
 		local name = player:get_player_name()
 		local bars = mcl_bossbars.bars[name]
 		local huds = mcl_bossbars.huds[name]
-		table.sort(bars, function(a, b) return a.priority < b.priority end)
+		table.sort(bars or {}, function(a, b) return a.priority < b.priority end)
 		local huds_new = {}
 		local bars_new = {}
 		local i = 0
 
-		while #huds > 0 or #bars > 0 do
+		while huds and bars and (#huds > 0 or #bars > 0) do
 			local bar = table.remove(bars, 1)
 			local hud = table.remove(huds, 1)
 
