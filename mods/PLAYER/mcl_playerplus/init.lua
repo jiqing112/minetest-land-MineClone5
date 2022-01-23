@@ -277,6 +277,11 @@ minetest.register_globalstep(function(dtime)
 		local fly_node = minetest.get_node({x = fly_pos.x, y = fly_pos.y - 0.5, z = fly_pos.z}).name
 		local elytra = mcl_playerplus.elytra[player]
 
+		if not elytra then
+			mcl_playerplus.elytra[player] = {}
+			elytra = mcl_playerplus.elytra[player]
+		end
+
 		elytra.active = player:get_inventory():get_stack("armor", 3):get_name() == "mcl_armor:elytra"
 			and not player:get_attach()
 			and (elytra.active or control.jump and player_velocity.y < -6)
@@ -399,7 +404,8 @@ minetest.register_globalstep(function(dtime)
 		-- Update jump status immediately since we need this info in real time.
 		-- WARNING: This section is HACKY as hell since it is all just based on heuristics.
 
-		if mcl_playerplus_internal[name].jump_cooldown > 0 then
+		local mcl_playerplus_internal_name = mcl_playerplus_internal[name]
+		if mcl_playerplus_internal_name and mcl_playerplus_internal_name.jump_cooldown > 0 then
 			mcl_playerplus_internal[name].jump_cooldown = mcl_playerplus_internal[name].jump_cooldown - dtime
 		end
 
@@ -614,6 +620,9 @@ minetest.register_globalstep(function(dtime)
 		end
 
 		-- Update internal values
+		if not mcl_playerplus_internal[name] then
+			mcl_playerplus_internal[name] = {}
+		end
 		mcl_playerplus_internal[name].lastPos = pos
 
 	end
