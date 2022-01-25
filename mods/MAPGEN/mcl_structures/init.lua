@@ -107,6 +107,7 @@ end
 
 function process_mapgen_block_lvm(vm_context)
 	local nodes = minetest.find_nodes_in_area(vm_context.minp, vm_context.maxp, {"group:struct"}, true)
+	nodes = mcl_compatibility.sort_nodes(nodes)
 	for node_name, pos_list in pairs(nodes) do
 		local lvm_callback = on_finished_block_callbacks[node_name]
 		if lvm_callback then
@@ -117,6 +118,7 @@ end
 
 function process_mapgen_chunk(minp, maxp, seed, vm_context)
 	local nodes = minetest.find_nodes_in_area(minp, maxp, {"group:struct"}, true)
+	nodes = mcl_compatibility.sort_nodes(nodes)
 	for node_name, pos_list in pairs(nodes) do
 		local chunk_callback = on_finished_chunk_callbacks[node_name]
 		if chunk_callback then
