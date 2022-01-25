@@ -63,6 +63,10 @@ minetest.register_globalstep(function(dtime)
 
 		-- what is around me?
 		local node_stand, node_stand_below, node_head, node_feet = get_player_nodes(pos)
+
+		if not mcl_playerinfo[name] then
+			mcl_playerinfo[name] = {}
+		end
 		mcl_playerinfo[name].node_stand = node_stand
 		mcl_playerinfo[name].node_stand_below = node_stand_below
 		mcl_playerinfo[name].node_head = node_head

@@ -1077,10 +1077,10 @@ if progressive_mode then
 			local name   = player:get_player_name()
 			local data   = player_data[name]
 			local inv_items = get_inv_items(player)
-			local diff      = table_diff(inv_items, data.inv_items)
+			local diff      = table_diff(inv_items, data and data.inv_items or {})
 
 			if #diff > 0 then
-				data.inv_items = table_merge(diff, data.inv_items)
+				data.inv_items = table_merge(diff, data and data.inv_items or {})
 			end
 		end
 

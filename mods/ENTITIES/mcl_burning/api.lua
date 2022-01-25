@@ -11,6 +11,7 @@ function mcl_burning.is_affected_by_rain(obj)
 end
 
 function mcl_burning.get_collisionbox(obj, smaller, storage)
+	if not storage then return end
 	local cache = storage.collisionbox_cache
 	if cache then
 		local box = cache[smaller and 2 or 1]
@@ -29,6 +30,7 @@ end
 function mcl_burning.get_touching_nodes(obj, nodenames, storage)
 	local pos = obj:get_pos()
 	local minp, maxp = mcl_burning.get_collisionbox(obj, true, storage)
+	if not minp or not maxp then return {} end
 	local nodes = minetest.find_nodes_in_area(vector.add(pos, minp), vector.add(pos, maxp), nodenames)
 	return nodes
 end

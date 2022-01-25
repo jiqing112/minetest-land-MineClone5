@@ -185,7 +185,8 @@ mobs.mob_punch = function(self, hitter, tflp, tool_capabilities, dir)
 
 	--if player is falling multiply damage by 1.5
 	--critical hit
-	if hitter:get_velocity().y < 0 then
+	local hitter_velocity = hitter:get_velocity() or hitter:get_player_velocity() or vector.new(0, 0, 0)
+	if hitter_velocity.y < 0 then
 		damage = damage * 1.5
 		mobs.critical_effect(self)
 	end
@@ -207,7 +208,9 @@ mobs.mob_punch = function(self, hitter, tflp, tool_capabilities, dir)
 		self.pause_timer = 0.4
 
 		--don't do knockback from a rider
-		for _,obj in pairs(self.object:get_children()) do
+		local object_children = self.object.get_children and self.object:get_children()
+		-- TODO: support 5.1.1
+		for _,obj in pairs(object_children or {}) do
 			if obj == hitter then
 				return
 			end

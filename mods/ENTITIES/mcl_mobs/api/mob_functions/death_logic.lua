@@ -99,7 +99,8 @@ mobs.death_logic = function(self, dtime)
     self.death_animation_timer = self.death_animation_timer + dtime
 
 	--get all attached entities and sort through them
-	local attached_entities = self.object:get_children()
+	-- TODO: support 5.1.1
+	local attached_entities = self.object.get_children and self.object:get_children() or {}
 	if #attached_entities > 0 then
 		for _,entity in pairs(attached_entities) do
 			--kick the player off

@@ -53,10 +53,18 @@ minetest.register_globalstep(function(dtime)
 	local moon_arg = {texture = get_moon_texture()}
 	local players = minetest.get_connected_players()
 	for p=1, #players do
-		players[p]:set_moon(moon_arg)
+		if players[p].set_moon then
+			players[p]:set_moon(moon_arg)
+		else
+			-- TODO: use old sky api
+		end
 	end
 end)
 
 minetest.register_on_joinplayer(function(player)
-	player:set_moon({texture = get_moon_texture(), scale=3.75})
+	if player.set_moon then
+		player:set_moon({texture = get_moon_texture(), scale=3.75})
+	else
+		-- TODO: use old sky api
+	end
 end)

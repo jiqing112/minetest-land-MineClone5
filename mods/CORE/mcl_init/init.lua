@@ -30,3 +30,7 @@ minetest.craftitemdef_default.stack_max = 64
 
 -- Set random seed for all other mods (Remember to make sure no other mod calls this function)
 math.randomseed(os.time())
+
+local modname = minetest.get_current_modname()
+local modpath = minetest.get_modpath(modname)
+dofile(modpath .. "/compatibility.lua")

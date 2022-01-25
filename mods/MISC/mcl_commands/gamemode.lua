@@ -20,6 +20,7 @@ minetest.register_on_shutdown(function()
 end)
 
 local core_is_creative_enabled = minetest.is_creative_enabled
+	or function() return false end
 
 minetest.is_creative_enabled = function(name)
 	local id = player_to_gamemode_id[name]
