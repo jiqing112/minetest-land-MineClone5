@@ -173,9 +173,15 @@ mobs.punch_attack = function(self)
 
     dir = vector_multiply(dir,3)
 
-    if self.attacking:get_velocity().y <= 1 then
-        dir.y = 5
-    end
+	local attacking = self.attacking
+	if attacking then
+		local attacking_velocity = attacking:get_velocity() or attacking:get_player_velocity()
+		if attacking_velocity then
+			if attacking_velocity.y <= 1 then
+				dir.y = 5
+			end
+		end
+	end
 
     self.attacking:add_velocity(dir)
 end
