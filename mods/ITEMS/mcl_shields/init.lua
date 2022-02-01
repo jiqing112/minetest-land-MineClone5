@@ -173,16 +173,22 @@ local function set_shield(player, block, i)
 		end
 	end
 	local shield = mcl_shields.players[player].shields[i]
-	if shield then
-		shield:get_luaentity()._blocking = block
-	end
+	if not shield then return end
+	local luaentity = shield:get_luaentity()
+	if not luaentity then return end
+	luaentity._blocking = block
 end
 
 local function set_interact(player, interact)
 	local player_name = player:get_player_name()
 	local privs = minetest.get_player_privs(player_name)
-	privs.interact = interact
-	minetest.set_player_privs(player_name, privs)
+	if privs.interact ~= interact then
+		local meta = player:get_meta()
+		if meta:get_int("ineract_revoked") ~= 1 then
+			privs.interact = interact
+			minetest.set_player_privs(player_name, privs)
+		end
+	end
 end
 
 local shield_hud = {}
@@ -194,7 +200,12 @@ local function remove_shield_hud(player)
 		set_shield(player, false, 1)
 		set_shield(player, false, 2)
 	end
-	player:hud_set_flags({wielditem = true})
+
+	local hf=player:hud_get_flags()
+	if not hf.wielditem then
+		player:hud_set_flags({wielditem = true})
+	end
+
 	playerphysics.remove_physics_factor(player, "speed", "shield_speed")
 	set_interact(player, true)
 end
@@ -456,6 +467,5 @@ minetest.register_on_joinplayer(function(player)
 		shields = {},
 		blocking = 0,
 	}
-	mcl_shields.players[player].blocking = 0
 	remove_shield_hud(player)
 end)
