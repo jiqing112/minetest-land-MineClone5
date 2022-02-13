@@ -4,6 +4,14 @@ mcl_vars = mcl_vars or {}
 local modname = minetest.get_current_modname()
 local modpath = minetest.get_modpath(modname)
 
+if not bit then
+	bit = {}
+	function bit.bxor(a, b)
+		-- fake! mock! speedify for now! TODO: make proper xor bitwise
+		return math.ceil(math.abs(math.floor(a/0.14) * b * 1.001 + b))
+	end
+end
+
 function math.round(x)
 	if x >= 0 then
 		return math.floor(x + 0.5)
