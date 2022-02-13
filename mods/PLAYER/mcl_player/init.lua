@@ -92,7 +92,6 @@ end
 local function set_texture(player, index, texture)
 	local textures = player_textures[player:get_player_name()]
 	if not textures then
-		-- TODO: Check if minetest.register_on_joinplayer() shouldn't really work in minetest 5.1.1?
 		player_textures[player:get_player_name()] = {"blank.png", "blank.png", "blank.png"}
 		textures = player_textures[player:get_player_name()]
 	end

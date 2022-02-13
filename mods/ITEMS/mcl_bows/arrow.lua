@@ -506,6 +506,7 @@ function ARROW_ENTITY.on_activate(self, staticdata, dtime_s)
 end
 
 minetest.register_on_respawnplayer(function(player)
+	if not player.get_children then return end
 	for _, obj in pairs(player:get_children()) do
 		local ent = obj:get_luaentity()
 		if ent and ent.name and string.find(ent.name, "mcl_bows:arrow_entity") then
