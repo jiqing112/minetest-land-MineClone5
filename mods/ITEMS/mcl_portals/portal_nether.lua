@@ -232,14 +232,20 @@ local function destroy_nether_portal(pos, node)
 		return
 	end
 	if orientation == 0 then
-		check_remove({x = pos.x - 1, y = pos.y, z = pos.z}, 0)
-		check_remove({x = pos.x + 1, y = pos.y, z = pos.z}, 0)
+		minetest.after(0,function()
+			check_remove({x = pos.x - 1, y = pos.y, z = pos.z}, 0)
+			check_remove({x = pos.x + 1, y = pos.y, z = pos.z}, 0)
+		end)
 	else
-		check_remove({x = pos.x, y = pos.y, z = pos.z - 1}, 1)
-		check_remove({x = pos.x, y = pos.y, z = pos.z + 1}, 1)
+		minetest.after(0,function()
+			check_remove({x = pos.x, y = pos.y, z = pos.z - 1}, 1)
+			check_remove({x = pos.x, y = pos.y, z = pos.z + 1}, 1)
+		end)
 	end
-	check_remove({x = pos.x, y = pos.y - 1, z = pos.z})
-	check_remove({x = pos.x, y = pos.y + 1, z = pos.z})
+	minetest.after(0,function()
+		check_remove({x = pos.x, y = pos.y - 1, z = pos.z})
+		check_remove({x = pos.x, y = pos.y + 1, z = pos.z})
+	end)
 end
 
 local on_rotate
