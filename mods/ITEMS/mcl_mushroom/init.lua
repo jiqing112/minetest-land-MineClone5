@@ -1,6 +1,5 @@
 local S = minetest.get_translator("mcl_mushroom")
 
--- function grow()
 function grow_twisting_vines(pos, moreontop)
 	local y = pos.y + 1
 	      while not (moreontop == 0) do
@@ -15,6 +14,18 @@ function grow_twisting_vines(pos, moreontop)
 			end
 	      end
 end
+
+minetest.register_abm({
+    nodenames = {"mcl_mushroom:twisting_vines"},
+    interval = 0.05,
+    chance = 1,
+    action = function(pos, node, active_object_count, active_object_count_wider)
+			if minetest.get_node({x = pos.x, y = pos.y-1, z = pos.z}).name == "air" then
+				minetest.set_node(pos, {name="air"})
+				minetest.add_item(pos, {name="mcl_mushroom:twisting_vines"})
+			end
+		end
+})
 
 
 -- Warped fungus
@@ -421,7 +432,7 @@ minetest.register_craft({
 minetest.register_craft({
   output = "mcl_mushroom:crimson_nylium 2",
   recipe = {
-    {"mcl_nether:nether_wart"},
+    {"mcl_nether:nether_wart_block"},
     {"mcl_nether:netherrack"},
   }
 })
