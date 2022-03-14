@@ -63,7 +63,7 @@ local function update_player(player_object)
 
 	local noclip = #find_nodes_in_area({x = x, y = head_y, z = z}, {x = x + 1, y = head_y + 1, z = z + 1}, "group:opaque") == 8
 
-	local velocity = player_object:get_velocity()
+	local velocity = player_object:get_velocity() or player_object:get_player_velocity()
 	if vector_length(velocity) < 0.00000001 then
 		player_doesnt_move[name] = (player_doesnt_move[name] or 0) + 1
 	else
@@ -71,7 +71,7 @@ local function update_player(player_object)
 	end
 	local player_data = {
 		pos = pos,
-		velocity = player_object:get_velocity() or player_object:get_player_velocity(),
+		velocity = velocity,
 		air = air,
 		noclip = noclip,
 	}
