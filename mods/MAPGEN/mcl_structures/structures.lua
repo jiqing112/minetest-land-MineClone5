@@ -15,4 +15,5 @@ if not mcl_mapgen.singlenode then
 	dofile(modpath .. "/ruined_portal.lua")
 	dofile(modpath .. "/stronghold.lua")
 	dofile(modpath .. "/witch_hut.lua")
+	dofile(modpath .. "/pillager_outpost.lua")
 end
