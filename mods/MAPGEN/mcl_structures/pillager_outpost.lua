@@ -25,8 +25,8 @@ local function on_placed(p1, rotation, pr, size)
 		local lootitems = mcl_loot.get_multi_loot({
 		
 		{
-			stack_min = 2,
-			stack_max = 3,
+			stacks_min = 2,
+			stacks_max = 3,
 			items = {
 				{ itemstring = "mcl_farming:wheat_item", weight = 7, amount_min = 3, amount_max=5 },
 				{ itemstring = "mcl_farming:carrot_item", weight = 5, amount_min = 3, amount_max=5 },
@@ -34,8 +34,8 @@ local function on_placed(p1, rotation, pr, size)
 			}
 		},
 		{
-			stack_min = 1,
-			stack_max = 2,
+			stacks_min = 1,
+			stacks_max = 2,
 			items = {
 				{ itemstring = "mcl_experience:bottle", weight = 6, amount_min = 0, amount_max=1 },
 				{ itemstring = "mcl_bows:arrow", weight = 4, amount_min = 2, amount_max=7 },
@@ -48,16 +48,16 @@ local function on_placed(p1, rotation, pr, size)
 		},
 		
 		{
-			stack_min = 1,
-			stack_max = 3,
+			stacks_min = 1,
+			stacks_max = 3,
 			items = {
 				{ itemstring = "mcl_core:darktree", amount_min = 2, amount_max=3 },
 			}
 		},
 		
 		{
-			stack_min = 1,
-			stack_max = 1,
+			stacks_min = 1,
+			stacks_max = 1,
 			items = {
 				{ itemstring = "mcl_bows:crossbow" },
 			}
@@ -94,6 +94,9 @@ end
 local function spawn_pillager(pos)
 	minetest.add_entity({x = pos.x, y = pos.y + 1, z = pos.z}, "mobs_mc:vindicator")
 end
+local function spawn_evoker(pos)
+	minetest.add_entity({x = pos.x, y = pos.y + 1, z = pos.z}, "mobs_mc:evoker")
+end
 minetest.register_node("mcl_structures:birchwood", {
 	description = S("Pillager Birch Wood"),
 	_doc_items_longdesc = doc.sub.items.temp.build,
@@ -128,12 +131,43 @@ minetest.register_abm({
 			local lua_entity = obj:get_luaentity()
 			if luaentity and luaentity.name == "mobs_mc:vindicator" then
 				pillagers_counter = pillagers_counter + 1
-				if pillagers_counter > 8 then return end
+				if pillagers_counter > 7 then return end
 			end
 		end
 		spawn_pillager(pos)
 	end
 })
+-- This is a temporary fix to the fact that totems of undying are unobtainable in survival. Minecraft Outposts dont have evokers.
+--[[
+minetest.register_abm({
+	label = "Spawn evokers",
+	nodenames = {"mcl_structures:birchwood"},
+	interval = 200,
+	chance = 100,
+	action = function(pos, node)
+		-- check the space above
+		local minetest_get_node = minetest.get_node
+		local x, y, z = pos.x, pos.y - 1, pos.z
+		local p3 = {x=x+6, y=y+15, z=z+6}
+		p3.y = p3.y + 1
+		if minetest_get_node(p3).name ~= "air" then return end
+		p3.y = p3.y + 1
+		if minetest_get_node(p3).name ~= "air" then return end
+		p3.y = p3.y - 1
+		local evoker_counter = 0
+		for _, obj in pairs(minetest.get_objects_inside_radius(p3, 30)) do
+			local lua_entity = obj:get_luaentity()
+			if luaentity and luaentity.name == "mobs_mc:evoker" then
+				evoker_counter = evoker_counter + 1
+				if evoker_counter > 0 then return end
+				elseif evoker_counter == 0 then
+					spawn_evoker(pos)
+					evoker_counter = evoker_counter + 1
+			end
+		end
+	end
+})
+]]--
 
 mcl_structures.register_structure({
 	name = "pillager_outpost",
