@@ -3,8 +3,8 @@ local modpath = minetest.get_modpath(modname)
 local S = minetest.get_translator(modname)
 
 local chance_per_chunk = 11
-local noise_multiplier = 1
-local random_offset    = 999
+local noise_multiplier = 1.4
+local random_offset    = 555
 local scanning_ratio   = 0.00003
 local struct_threshold = chance_per_chunk
 
