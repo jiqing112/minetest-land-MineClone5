@@ -77,8 +77,7 @@ minetest.register_node("mcl_nether:netheriteblock", {
 	sounds = mcl_sounds.node_sound_stone_defaults(),
 	_mcl_blast_resistance = 1200,
 	_mcl_hardness = 50,
-	_mcl_silk_touch_drop = true,
-	_mcl_fortune_drop = mcl_core.fortune_drop_ore
+	_mcl_silk_touch_drop = true
 })
 
 -- For eternal fire on top of netherrack and magma blocks
@@ -202,7 +201,7 @@ minetest.register_node("mcl_nether:nether_wart_block", {
 	stack_max = 64,
 	tiles = {"mcl_nether_nether_wart_block.png"},
 	is_ground_content = false,
-	groups = {handy=1, hoey=1, building_block=1},
+	groups = {handy=1, hoey=1, building_block=1, compostability=85},
 	sounds = mcl_sounds.node_sound_leaves_defaults(
 		{
 			footstep={name="default_dirt_footstep", gain=0.7},
