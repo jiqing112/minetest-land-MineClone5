@@ -430,7 +430,6 @@ if minetest.get_modpath("mobs_mc") then
     nil) --day_toggle
 end
 --]]
-
 end
 
 -- Disable natural generation in singlenode.
