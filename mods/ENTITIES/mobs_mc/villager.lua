@@ -69,6 +69,14 @@ local tiernames = {
 	"Master",
 }
 
+local badges = {
+	"mcl_core:wood",
+	"mcl_core:stone",
+	"mcl_core:goldblock",
+	"mcl_core:emeraldblock",
+	"mcl_core:diamondblock",
+}
+
 local professions = {
 	unemployed = {
 		name = N("Unemployed"),
@@ -454,7 +462,7 @@ local professions = {
 				"mobs_mc_villager_smith.png",
 				"mobs_mc_villager_smith.png",
 			},
-		jobsite = "mcl_villages:stonebrickcarved", --FIXME: smithing table
+		jobsite = "mcl_anvils:anvil", --FIXME: smithing table
 		trades = {
 			{
 			{ { "mcl_core:coal_lump", 15, 15 }, E1 },
