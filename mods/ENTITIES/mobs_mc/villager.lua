@@ -1255,6 +1255,11 @@ mobs:register_mob("mobs_mc:villager", {
 	bed = nil,
 	_id = nil,
 	_profession = "unemployed",
+	look_at_player = true,
+	pick_up = {"mcl_farming:bread"},
+	on_pick_up = function(self,itementity)
+		minetest.log("picked up "..itementity.itemstring)
+	end,
 	on_rightclick = function(self, clicker)
 		if clicker:get_wielded_item():get_name() == "mcl_farming:bread" then
 			if mobs:feed_tame(self, clicker, 1, true, true) then return end

@@ -2401,8 +2401,20 @@ local do_jump = function(self)
 		return false
 	end
 
-	if self.walk_chance == 0
-	or minetest_registered_items[nod.name].walkable then
+local function check_item_pickup(self)
+	if self.pick_up and #self.pick_up > 0 then
+		for _,o in pairs(minetest.get_objects_inside_radius(self.object:get_pos(),2)) do
+			local l=o:get_luaentity()
+			if l and l.name == "__builtin:item" then
+				for k,v in pairs(self.pick_up) do
+					if self.on_pick_up and l.itemstring:find(v) then
+						if self.on_pick_up(self,l) == nil then o:remove() end
+					end
+				end
+			end
+		end
+	end
+end
 
 		if minetest_get_item_group(nod.name, "fence") == 0
 		and minetest_get_item_group(nod.name, "fence_gate") == 0
@@ -2818,9 +2830,12 @@ function do_states(self)
 
 			lp = minetest_find_node_near(s, 1, {"group:lava"})
 
-		elseif self.fire_damage > 0 then
-
-			lp = minetest_find_node_near(s, 1, {"group:fire"})
+-- main mob function
+local mob_step = function(self, dtime)
+	check_item_pickup(self)
+	if not self.fire_resistant then
+		mcl_burning.tick(self.object, dtime, self)
+	end
 
 		end
 
@@ -3135,7 +3150,161 @@ function do_states(self)
 				z = p.z - s.z
 			}
 
-			yaw = (atan(vec.z / vec.x) + math_pi / 2) - self.rotate
+minetest.register_entity(name, {
+
+	use_texture_alpha = def.use_texture_alpha,
+	stepheight = def.stepheight or 0.6,
+	name = name,
+	description = def.description,
+	type = def.type,
+	attack_type = def.attack_type,
+	fly = def.fly,
+	fly_in = def.fly_in or {"air", "__airlike"},
+	owner = def.owner or "",
+	order = def.order or "",
+	on_die = def.on_die,
+	spawn_small_alternative = def.spawn_small_alternative,
+	do_custom = def.do_custom,
+	jump_height = def.jump_height or 4, -- was 6
+	rotate = math.rad(def.rotate or 0), --  0=front, 90=side, 180=back, 270=side2
+	lifetimer = def.lifetimer or 57.73,
+	hp_min = scale_difficulty(def.hp_min, 5, 1),
+	hp_max = scale_difficulty(def.hp_max, 10, 1),
+	xp_min = def.xp_min or 0,
+	xp_max = def.xp_max or 0,
+	xp_timestamp = 0,
+	breath_max = def.breath_max or 15,
+        breathes_in_water = def.breathes_in_water or false,
+	physical = true,
+	collisionbox = collisionbox,
+	selectionbox = def.selectionbox or def.collisionbox,
+	visual = def.visual,
+	visual_size = def.visual_size or {x = 1, y = 1},
+	mesh = def.mesh,
+	makes_footstep_sound = def.makes_footstep_sound or false,
+	view_range = def.view_range or 16,
+	walk_velocity = def.walk_velocity or 1,
+	run_velocity = def.run_velocity or 2,
+	damage = scale_difficulty(def.damage, 0, 0),
+	light_damage = def.light_damage or 0,
+	sunlight_damage = def.sunlight_damage or 0,
+	water_damage = def.water_damage or 0,
+	lava_damage = def.lava_damage or 8,
+	fire_damage = def.fire_damage or 1,
+	suffocation = def.suffocation or true,
+	fall_damage = def.fall_damage or 1,
+	fall_speed = def.fall_speed or DEFAULT_FALL_SPEED, -- must be lower than -2
+	drops = def.drops or {},
+	armor = def.armor or 100,
+	on_rightclick = create_mob_on_rightclick(def.on_rightclick),
+	arrow = def.arrow,
+	shoot_interval = def.shoot_interval,
+	sounds = def.sounds or {},
+	animation = def.animation,
+	follow = def.follow,
+	jump = def.jump ~= false,
+	walk_chance = def.walk_chance or 50,
+	attacks_monsters = def.attacks_monsters or false,
+	group_attack = def.group_attack or false,
+	passive = def.passive or false,
+	knock_back = def.knock_back ~= false,
+	shoot_offset = def.shoot_offset or 0,
+	floats = def.floats or 1, -- floats in water by default
+	floats_on_lava = def.floats_on_lava or 0,
+	replace_rate = def.replace_rate,
+	replace_what = def.replace_what,
+	replace_with = def.replace_with,
+	replace_offset = def.replace_offset or 0,
+	on_replace = def.on_replace,
+	timer = 0,
+	env_damage_timer = 0,
+	tamed = false,
+	pause_timer = 0,
+	horny = false,
+	hornytimer = 0,
+	gotten = false,
+	health = 0,
+	reach = def.reach or 3,
+	htimer = 0,
+	texture_list = def.textures,
+	child_texture = def.child_texture,
+	docile_by_day = def.docile_by_day or false,
+	time_of_day = 0.5,
+	fear_height = def.fear_height or 0,
+	runaway = def.runaway,
+	runaway_timer = 0,
+	pathfinding = def.pathfinding,
+	immune_to = def.immune_to or {},
+	explosion_radius = def.explosion_radius, -- LEGACY
+	explosion_damage_radius = def.explosion_damage_radius, -- LEGACY
+	explosiontimer_reset_radius = def.explosiontimer_reset_radius,
+	explosion_timer = def.explosion_timer or 3,
+	allow_fuse_reset = def.allow_fuse_reset ~= false,
+	stop_to_explode = def.stop_to_explode ~= false,
+	custom_attack = def.custom_attack,
+	double_melee_attack = def.double_melee_attack,
+	dogshoot_switch = def.dogshoot_switch,
+	dogshoot_count = 0,
+	dogshoot_count_max = def.dogshoot_count_max or 5,
+	dogshoot_count2_max = def.dogshoot_count2_max or (def.dogshoot_count_max or 5),
+	attack_animals = def.attack_animals or false,
+	specific_attack = def.specific_attack,
+	runaway_from = def.runaway_from,
+	owner_loyal = def.owner_loyal,
+	facing_fence = false,
+	_cmi_is_mob = true,
+	pushable = def.pushable or true,
+
+
+	-- MCL2 extensions
+	teleport = teleport,
+	do_teleport = def.do_teleport,
+	spawn_class = def.spawn_class,
+	ignores_nametag = def.ignores_nametag or false,
+	rain_damage = def.rain_damage or 0,
+	glow = def.glow,
+	can_despawn = can_despawn,
+	child = def.child or false,
+	texture_mods = {},
+	shoot_arrow = def.shoot_arrow,
+    sounds_child = def.sounds_child,
+    pick_up = def.pick_up,
+	explosion_strength = def.explosion_strength,
+	suffocation_timer = 0,
+	follow_velocity = def.follow_velocity or 2.4,
+	instant_death = def.instant_death or false,
+	fire_resistant = def.fire_resistant or false,
+	fire_damage_resistant = def.fire_damage_resistant or false,
+	ignited_by_sunlight = def.ignited_by_sunlight or false,
+	-- End of MCL2 extensions
+
+	on_spawn = def.on_spawn,
+
+	on_blast = def.on_blast or do_tnt,
+
+	on_step = mob_step,
+
+	do_punch = def.do_punch,
+
+	on_punch = mob_punch,
+
+	on_breed = def.on_breed,
+
+	on_grown = def.on_grown,
+
+	on_pick_up = def.on_pick_up,
+
+	on_detach_child = mob_detach_child,
+
+	on_activate = function(self, staticdata, dtime)
+		--this is a temporary hack so mobs stop
+		--glitching and acting really weird with the
+		--default built in engine collision detection
+		self.object:set_properties({
+			collide_with_objects = false,
+		})
+		return mob_activate(self, staticdata, def, dtime)
+	end,
 
 			if p.x > s.x then yaw = yaw + math_pi end
 
