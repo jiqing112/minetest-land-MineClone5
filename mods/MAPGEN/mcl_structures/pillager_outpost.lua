@@ -92,7 +92,7 @@ local function get_place_rank(pos)
 end
 
 local function spawn_pillager(pos)
-	minetest.add_entity({x = pos.x, y = pos.y + 1, z = pos.z}, "mobs_mc:vindicator")
+	minetest.add_entity({x = pos.x, y = pos.y + 1, z = pos.z}, "mobs_mc:pillager")
 end
 local function spawn_evoker(pos)
 	minetest.add_entity({x = pos.x, y = pos.y + 1, z = pos.z}, "mobs_mc:evoker")
@@ -129,12 +129,14 @@ minetest.register_abm({
 		local pillagers_counter = 0
 		for _, obj in pairs(minetest.get_objects_inside_radius(p, 30)) do
 			local lua_entity = obj:get_luaentity()
-			if luaentity and luaentity.name == "mobs_mc:vindicator" then
+			if luaentity and luaentity.name == "mobs_mc:pillager" then
 				pillagers_counter = pillagers_counter + 1
 				if pillagers_counter > 7 then return end
 			end
 		end
-		spawn_pillager(pos)
+		if pillagers_counter <= 8 then
+			spawn_pillager(pos)
+		end
 	end
 })
 -- This is a temporary fix to the fact that totems of undying are unobtainable in survival. Minecraft Outposts dont have evokers.
