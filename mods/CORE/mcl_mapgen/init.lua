@@ -178,7 +178,7 @@ local function is_chunk_finished(minp)
 					local node = minetest_get_node(check_pos)
 					if node.name == "ignore" then
 			-- return nil, means false, means, there is something to generate still,
-			-- (because one of adjanced chucks is unfinished - "ignore" means that),
+			-- (because one of adjacent chunks is unfinished - "ignore" means that),
 			-- means this chunk will be changed, at least one of its sides or corners
 			-- means it's unsafe to place anything there right now, it might disappar,
 			-- better to wait, see the diagram of conflict/ok areas per a single axis:
