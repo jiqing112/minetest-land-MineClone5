@@ -2,86 +2,124 @@ local S = minetest.get_translator(minetest.get_current_modname())
 
 local VISUAL_SIZE = 0.3
 
-local vari = {{ "mcl_itemframes:item", "mcl_itemframes:map", "mcl_itemframes:item_frame", S("Item Frame"), S("Can hold an item"), S("Item frames are decorative blocks in which items can be placed."), "mcl_itemframes_itemframe1facedir.obj", "mcl_itemframes_itemframe_background.png", "default_wood.png", "mcl_itemframes_item_frame.png", "mcl_itemframes_item_frame.png", {"itemframes:frame"}},
-{ "mcl_itemframes:glow_item", "mcl_itemframes:glow_map", "mcl_itemframes:glow_item_frame", S("Glow Item Frame"), S("Can hold an item and glows"), S("Glow Item frames are decorative blocks in which items can be placed."), "extra_mobs_glow_item_frame.obj", "extra_mobs_glow_item_frame_border.png", "extra_mobs_glow_item_frame_border.png", "extra_mobs_glow_item_frame_item.png", "extra_mobs_glow_item_frame.png", {"extra_mobs:glow_frame", "extra_mobs:glow_item_frame"}},
+local vari = {
+	{
+		"mcl_itemframes:item",
+		"mcl_itemframes:map",
+		"mcl_itemframes:item_frame",
+		S("Item Frame"),
+		S("Can hold an item"),
+		S("Item frames are decorative blocks in which items can be placed."),
+		"mcl_itemframes_itemframe1facedir.obj",
+		"mcl_itemframes_itemframe_background.png",
+		"default_wood.png",
+		"mcl_itemframes_item_frame.png",
+		"mcl_itemframes_item_frame.png",
+		{
+			"itemframes:frame",
+		},
+	},
+	{
+		"mcl_itemframes:glow_item",
+		"mcl_itemframes:glow_map",
+		"mcl_itemframes:glow_item_frame",
+		S("Glow Item Frame"),
+		S("Can hold an item and glows"),
+		S("Glow Item frames are decorative blocks in which items can be placed."),
+		"extra_mobs_glow_item_frame.obj",
+		"extra_mobs_glow_item_frame_border.png",
+		"extra_mobs_glow_item_frame_border.png",
+		"extra_mobs_glow_item_frame_item.png",
+		"extra_mobs_glow_item_frame.png",
+		{
+			"extra_mobs:glow_frame",
+			"extra_mobs:glow_item_frame",
+		},
+	},
 }
 
-for v=1, #vari do
-    local var = vari[v]
-    minetest.register_entity(var[1],{
-	    hp_max = 1,
-	    visual = "wielditem",
-	    visual_size = {x=VISUAL_SIZE, y=VISUAL_SIZE},
-	    physical = false,
-	    pointable = false,
-	    textures = { "blank.png" },
-	    _texture = "blank.png",
-	    _scale = 1,
-        glow = (v-1)*minetest.LIGHT_MAX,
-
-	    on_activate = function(self, staticdata)
-	    	if staticdata and staticdata ~= "" then
-	    		local data = staticdata:split(";")
-	    		if data and data[1] and data[2] then
-	    			self._nodename = data[1]
-	    			self._texture = data[2]
-	    			if data[3] then
-	    				self._scale = data[3]
-	    			else
-	    				self._scale = 1
-	    			end
-	    		end
-	    	end
-	    	if self._texture then
-	    		self.object:set_properties({
-	    			textures={self._texture},
-	    			visual_size={x=VISUAL_SIZE/self._scale, y=VISUAL_SIZE/self._scale},
-	    		})
-	    	end
-	    end,
-	    get_staticdata = function(self)
-	    	if not self then return end
-	    	if self._nodename and self._texture then
-	    		local ret = self._nodename .. ";" .. self._texture
-	    		if self._scale then
-	    			ret = ret .. ";" .. self._scale
-	    		end
-	    		return ret
-	    	end
-	    	return ""
-	    end,
-    
-	    _update_texture = function(self)
-	    	if self._texture then
-	    		self.object:set_properties({
-	    			textures={self._texture},
-	    			visual_size={x=VISUAL_SIZE/self._scale, y=VISUAL_SIZE/self._scale},
-	    		})
-	    	end
-	    end,
-    })
-
-<<<<<<< HEAD
-    minetest.register_entity(var[2], {
-	    initial_properties = {
-	    	visual = "upright_sprite",
-	    	visual_size = {x = 1, y = 1},
-	    	pointable = false,
-	    	physical = false,
-	       	collide_with_objects = false,
-		    textures = {"blank.png"},
-	    },
-	    on_activate = function(self, staticdata)
-		    self.id = staticdata
-            mcl_maps.load_map(self.id, function(texture)
-		    	-- will not crash even if self.object is invalid by now
-		    	self.object:set_properties({textures = {texture}})
-		    end)
-	    end,
-	    get_staticdata = function(self)
-		    return self.id
-	    end,
-    })
+for v = 1, #vari do
+	local var = vari[v]
+	minetest.register_entity(var[1], {
+		hp_max = 1,
+		visual = "wielditem",
+		visual_size = {
+			x = VISUAL_SIZE,
+			y = VISUAL_SIZE,
+		},
+		physical  = false,
+		pointable = false,
+		textures  = {
+			"blank.png"
+		},
+		_texture = "blank.png",
+		_scale = 1,
+		glow = (v - 1) * minetest.LIGHT_MAX,
+		on_activate = function(self, staticdata)
+			if staticdata and staticdata ~= "" then
+				local data = staticdata:split(";")
+				if data and data[1] and data[2] then
+					self._nodename = data[1]
+					self._texture = data[2]
+					if data[3] then
+						self._scale = data[3]
+					else
+						self._scale = 1
+					end
+				end
+			end
+			if self._texture then
+				self.object:set_properties({
+					textures    = {self._texture},
+					visual_size = {
+						x = VISUAL_SIZE / self._scale,
+						y = VISUAL_SIZE / self._scale,
+					},
+				})
+			end
+		end,
+		get_staticdata = function(self)
+			if not self then return end
+			if self._nodename and self._texture then
+				local ret = self._nodename .. ";" .. self._texture
+				if self._scale then
+					ret = ret .. ";" .. self._scale
+				end
+				return ret
+			end
+			return ""
+		end,
+		_update_texture = function(self)
+			if self._texture then
+				self.object:set_properties({
+					textures    = {self._texture},
+					visual_size = {
+						x = VISUAL_SIZE / self._scale,
+						y = VISUAL_SIZE / self._scale,
+					},
+				})
+			end
+		end,
+	})
+	minetest.register_entity(var[2], {
+		initial_properties = {
+			visual = "upright_sprite",
+			visual_size = {x = 1, y = 1},
+			pointable = false,
+			physical = false,
+			collide_with_objects = false,
+			textures = {"blank.png"},
+		},
+		on_activate = function(self, staticdata)
+			self.id = staticdata
+			mcl_maps.load_map(self.id, function(texture)
+				self.object:set_properties({textures = {texture}})
+			end)
+		end,
+		get_staticdata = function(self)
+			return self.id
+		end,
+	})
 =======
 minetest.register_entity("mcl_itemframes:map", {
 	initial_properties = {

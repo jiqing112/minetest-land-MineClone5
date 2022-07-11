@@ -1,5 +1,3 @@
-mods/ITEMS/mcl_fire/init.lua
-mods/ITEMS/mcl_flowers/init.lua
 mods/ITEMS/mcl_itemframes/init.lua
 mods/ITEMS/mcl_lanterns/init.lua
 mods/ITEMS/mcl_lanterns/mod.conf
