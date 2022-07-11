@@ -96,7 +96,10 @@ local function allow_metadata_inventory_put(pos, listname, index, stack, player)
 	local meta = minetest.get_meta(pos)
 	local inv = meta:get_inventory()
 	if listname == "fuel" then
+<<<<<<< HEAD
 
+=======
+>>>>>>> mcl2/master
 		-- Test stack with size 1 because we burn one fuel at a time
 		local teststack = ItemStack(stack)
 		teststack:set_count(1)
@@ -205,11 +208,70 @@ local function swap_node(pos, name)
 	end
 end
 
+<<<<<<< HEAD
 local function furnace_node_timer(pos, elapsed)
 	--
 	-- Inizialize metadata
 	--
 	local meta = minetest.get_meta(pos)
+=======
+local function smoker_reset_delta_time(pos)
+	local meta = minetest.get_meta(pos)
+	local time_speed = tonumber(minetest.settings:get("time_speed") or 72)
+	if (time_speed < 0.1) then
+		return
+	end
+	local time_multiplier = 86400 / time_speed
+	local current_game_time = .0 + ((minetest.get_day_count() + minetest.get_timeofday()) * time_multiplier)
+
+	-- TODO: Change meta:get/set_string() to get/set_float() for "last_gametime".
+	-- In Windows *_float() works OK but under Linux it returns rounded unusable values like 449540.000000000
+	local last_game_time = meta:get_string("last_gametime")
+	if last_game_time then
+		last_game_time = tonumber(last_game_time)
+	end
+	if not last_game_time or last_game_time < 1 or math.abs(last_game_time - current_game_time) <= 1.5 then
+		return
+	end
+
+	meta:set_string("last_gametime", tostring(current_game_time))
+end
+
+local function smoker_get_delta_time(pos, elapsed)
+	local meta = minetest.get_meta(pos)
+	local time_speed = tonumber(minetest.settings:get("time_speed") or 72)
+	local current_game_time
+	if (time_speed < 0.1) then
+		return meta, elapsed
+	else
+		local time_multiplier = 86400 / time_speed
+		current_game_time = .0 + ((minetest.get_day_count() + minetest.get_timeofday()) * time_multiplier)
+	end
+
+	local last_game_time = meta:get_string("last_gametime")
+	if last_game_time then
+		last_game_time = tonumber(last_game_time)
+	end
+	if not last_game_time or last_game_time < 1 then
+		last_game_time = current_game_time - 0.1
+	elseif last_game_time == current_game_time then
+		current_game_time = current_game_time + 1.0
+	end
+
+	local elapsed_game_time = .0 + current_game_time - last_game_time
+
+	meta:set_string("last_gametime", tostring(current_game_time))
+
+	return meta, elapsed_game_time
+end
+
+local function smoker_node_timer(pos, elapsed)
+	--
+	-- Inizialize metadata
+	--
+	local meta, elapsed_game_time = smoker_get_delta_time(pos, elapsed)
+
+>>>>>>> mcl2/master
 	local fuel_time = meta:get_float("fuel_time") or 0
 	local src_time = meta:get_float("src_time") or 0
 	local src_item = meta:get_string("src_item") or ""
@@ -233,13 +295,21 @@ local function furnace_node_timer(pos, elapsed)
 	end
 
 	local update = true
+<<<<<<< HEAD
 	local elapsed_game_time = mcl_time.get_irl_seconds_passed_at_pos_or_nil(pos) or elapsed
+=======
+>>>>>>> mcl2/master
 	while elapsed_game_time > 0.00001 and update do
 		--
 		-- Cooking
 		--
 
+<<<<<<< HEAD
 		local el = elapsed_game_time
+=======
+		-- Run the smoker at twice the speed of a furnace.
+		local el = elapsed_game_time * 2
+>>>>>>> mcl2/master
 
 		-- Check if we have cookable content: cookable
 		local aftercooked
@@ -280,13 +350,21 @@ local function furnace_node_timer(pos, elapsed)
 		elseif active then
 			el = math.min(el, fuel_totaltime - fuel_time)
 			-- The furnace is currently active and has enough fuel
+<<<<<<< HEAD
 			fuel_time = (fuel_time + el)*2
+=======
+			fuel_time = fuel_time + el
+>>>>>>> mcl2/master
 		end
 
 		-- If there is a cookable item then check if it is ready yet
 		if cookable and active then
+<<<<<<< HEAD
 		-- in the src_time variable, the *2 is the multiplication that makes the smoker work faster than a normal furnace.
 			src_time = (src_time + el)*2
+=======
+			src_time = src_time + el
+>>>>>>> mcl2/master
 			-- Place result in dst list if done
 			if src_time >= cooked.time then
 				inv:add_item("dst", cooked.item)
@@ -367,6 +445,7 @@ end
 minetest.register_node("mcl_smoker:smoker", {
 	description = S("Smoker"),
 	_tt_help = S("Cooks food faster than furnace"),
+<<<<<<< HEAD
 	_doc_items_longdesc = S("Smokers cook several items, mainly raw foods, into cooked foods, but twice as fast as a normal furnace."),
 	_doc_items_usagehelp =
 			S([[
@@ -379,6 +458,20 @@ minetest.register_node("mcl_smoker:smoker", {
 	_doc_items_hidden = false,
 	tiles = {
 		"smoker_top.png", "smoker_top.png",
+=======
+	_doc_items_longdesc = S("Smokers cook several items, using a furnace fuel, into something else, but twice as fast as a normal furnace"),
+	_doc_items_usagehelp =
+			S([[
+				Use the smoker to open the furnace menu.
+				Place a furnace fuel in the lower slot and the source material in the upper slot.
+				The smoker will slowly use its fuel to smelt the item.
+				The result will be placed into the output slot at the right side.
+			]]).."\n"..
+			S("Use the recipe book to see what foods you can smelt, what you can use as fuel and how long it will burn."),
+	_doc_items_hidden = false,
+	tiles = {
+		"smoker_top.png", "smoker_bottom.png",
+>>>>>>> mcl2/master
 		"smoker_side.png", "smoker_side.png",
 		"smoker_side.png", "smoker_front.png"
 	},
@@ -387,7 +480,11 @@ minetest.register_node("mcl_smoker:smoker", {
 	is_ground_content = false,
 	sounds = mcl_sounds.node_sound_stone_defaults(),
 
+<<<<<<< HEAD
 	on_timer = furnace_node_timer,
+=======
+	on_timer = smoker_node_timer,
+>>>>>>> mcl2/master
 	after_dig_node = function(pos, oldnode, oldmetadata, digger)
 		local meta = minetest.get_meta(pos)
 		local meta2 = meta:to_table()
@@ -418,20 +515,32 @@ minetest.register_node("mcl_smoker:smoker", {
 
 	on_metadata_inventory_move = function(pos, from_list, from_index, to_list, to_index, count, player)
 		-- Reset accumulated game time when player works with furnace:
+<<<<<<< HEAD
 		mcl_time.touch(pos)
+=======
+		smoker_reset_delta_time(pos)
+>>>>>>> mcl2/master
 		minetest.get_node_timer(pos):start(1.0)
 
 		on_metadata_inventory_move(pos, from_list, from_index, to_list, to_index, count, player)
 	end,
 	on_metadata_inventory_put = function(pos)
 		-- Reset accumulated game time when player works with furnace:
+<<<<<<< HEAD
 		mcl_time.touch(pos)
+=======
+		smoker_reset_delta_time(pos)
+>>>>>>> mcl2/master
 		-- start timer function, it will sort out whether furnace can burn or not.
 		minetest.get_node_timer(pos):start(1.0)
 	end,
 	on_metadata_inventory_take = function(pos, listname, index, stack, player)
 		-- Reset accumulated game time when player works with furnace:
+<<<<<<< HEAD
 		mcl_time.touch(pos)
+=======
+		smoker_reset_delta_time(pos)
+>>>>>>> mcl2/master
 		-- start timer function, it will helpful if player clears dst slot
 		minetest.get_node_timer(pos):start(1.0)
 
@@ -451,7 +560,11 @@ minetest.register_node("mcl_smoker:smoker_active", {
 	description = S("Burning Smoker"),
 	_doc_items_create_entry = false,
 	tiles = {
+<<<<<<< HEAD
 		"smoker_top.png", "smoker_top.png",
+=======
+		"smoker_top.png", "smoker_bottom.png",
+>>>>>>> mcl2/master
 		"smoker_side.png", "smoker_side.png",
 		"smoker_side.png", {name = "smoker_front_on.png",
 				animation = {type = "vertical_frames", aspect_w = 16, aspect_h = 16, length = 48}},
@@ -463,7 +576,11 @@ minetest.register_node("mcl_smoker:smoker_active", {
 	groups = {pickaxey=1, container=4, deco_block=1, not_in_creative_inventory=1, material_stone=1},
 	is_ground_content = false,
 	sounds = mcl_sounds.node_sound_stone_defaults(),
+<<<<<<< HEAD
 	on_timer = furnace_node_timer,
+=======
+	on_timer = smoker_node_timer,
+>>>>>>> mcl2/master
 
 	after_dig_node = function(pos, oldnode, oldmetadata, digger)
 		local meta = minetest.get_meta(pos)
@@ -510,16 +627,23 @@ minetest.register_craft({
 	}
 })
 
+<<<<<<< HEAD
 minetest.register_alias("mcl_smoker:smoker", "mcl_furnaces:smoker")
 minetest.register_alias("mcl_smoker:smoker_active", "mcl_furnaces:smoker_active")
 
+=======
+>>>>>>> mcl2/master
 -- Add entry alias for the Help
 if minetest.get_modpath("doc") then
 	doc.add_entry_alias("nodes", "mcl_smoker:smoker", "nodes", "mcl_smoker:smoker_active")
 end
 
 minetest.register_lbm({
+<<<<<<< HEAD
 	label = "Active furnace flame particles",
+=======
+	label = "Active smoker flame particles",
+>>>>>>> mcl2/master
 	name = "mcl_smoker:flames",
 	nodenames = {"mcl_smoker:smoker_active"},
 	run_at_every_load = true,

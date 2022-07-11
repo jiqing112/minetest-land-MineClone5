@@ -80,7 +80,17 @@ function mcl_flowers.register_simple_flower(name, def)
 		walkable = false,
 		stack_max = 64,
 		drop = def.drop,
+<<<<<<< HEAD
 		groups = {dig_immediate=3,flammable=2,fire_encouragement=60,fire_flammability=100,plant=1,flower=1,place_flowerlike=1,non_mycelium_plant=1,attached_node=1,dig_by_water=1,destroy_by_lava_flow=1,dig_by_piston=1,enderman_takable=1,deco_block=1, compostability=65},
+=======
+		groups = {
+			attached_node = 1, deco_block = 1, dig_by_piston = 1, dig_immediate = 3,
+			dig_by_water = 1, destroy_by_lava_flow = 1, enderman_takable = 1,
+			plant = 1, flower = 1, place_flowerlike = 1, non_mycelium_plant = 1,
+			flammable = 2, fire_encouragement = 60, fire_flammability = 100,
+			compostability = 65
+		},
+>>>>>>> mcl2/master
 		sounds = mcl_sounds.node_sound_leaves_defaults(),
 		node_placement_prediction = "",
 		on_place = on_place_flower,
@@ -143,7 +153,16 @@ local def_tallgrass = {
 	walkable = false,
 	buildable_to = true,
 	is_ground_content = true,
+<<<<<<< HEAD
 	groups = {handy=1,shearsy=1, flammable=3,fire_encouragement=60,fire_flammability=100,attached_node=1,plant=1,place_flowerlike=2,non_mycelium_plant=1,dig_by_water=1,destroy_by_lava_flow=1,deco_block=1, compostability=30},
+=======
+	groups = {
+		handy = 1, shearsy = 1, attached_node = 1, deco_block = 1,
+		plant = 1, place_flowerlike = 2, non_mycelium_plant = 1,
+		flammable = 3, fire_encouragement = 60, fire_flammability = 100,
+		dig_by_water = 1, destroy_by_lava_flow = 1, compostability = 30
+	},
+>>>>>>> mcl2/master
 	sounds = mcl_sounds.node_sound_leaves_defaults(),
 	drop = wheat_seed_drop,
 	_mcl_shears_drop = true,
@@ -168,6 +187,7 @@ def_fern.selection_box = {
 	type = "fixed",
 	fixed = { -6/16, -0.5, -6/16, 6/16, 5/16, 6/16 },
 }
+def_fern.groups.compostability = 65
 
 minetest.register_node("mcl_flowers:fern", def_fern)
 
@@ -188,7 +208,15 @@ local function add_large_plant(name, desc, longdesc, bottom_img, top_img, inv_im
 		is_flower = true
 	end
 
-	local bottom_groups = {flammable=2, fire_encouragement=60, fire_flammability=100, non_mycelium_plant=1, attached_node=1, dig_by_water=1, destroy_by_lava_flow=1, dig_by_piston=1, plant=1, double_plant=1, deco_block=1}
+	local bottom_groups = {
+		attached_node = 1, deco_block = 1,
+		dig_by_water = 1, destroy_by_lava_flow = 1, dig_by_piston = 1,
+		flammable = 2, fire_encouragement = 60, fire_flammability = 100,
+		plant = 1, double_plant = 1, non_mycelium_plant = 1, compostability = 65
+	}
+	if name == "double_grass" then
+		bottom_groups.compostability = 50
+	end
 	if is_flower then
 		bottom_groups.flower = 1
 		bottom_groups.place_flowerlike = 1
@@ -374,8 +402,8 @@ add_large_plant("sunflower", S("Sunflower"), S("A sunflower is a large plant whi
 local longdesc_grass = S("Double tallgrass a variant of tall grass and occupies two blocks. It can be harvested for wheat seeds.")
 local longdesc_fern = S("Large fern is a variant of fern and occupies two blocks. It can be harvested for wheat seeds.")
 
-add_large_plant("double_grass", S("Double Tallgrass"), longdesc_grass, "mcl_flowers_double_plant_grass_bottom.png", "mcl_flowers_double_plant_grass_top.png", "mcl_flowers_double_plant_grass_inv.png", 6/16, 4/16, wheat_seed_drop, {"mcl_flowers:tallgrass 2"}, false, true, nil, fortune_wheat_seed_drop)
-add_large_plant("double_fern", S("Large Fern"), longdesc_fern, "mcl_flowers_double_plant_fern_bottom.png", "mcl_flowers_double_plant_fern_top.png", "mcl_flowers_double_plant_fern_inv.png", 5/16, 5/16, wheat_seed_drop, {"mcl_flowers:fern 2"}, false, true, nil, fortune_wheat_seed_drop)
+add_large_plant("double_grass", S("Double Tallgrass"), longdesc_grass, "mcl_flowers_double_plant_grass_bottom.png", "mcl_flowers_double_plant_grass_top.png", "mcl_flowers_double_plant_grass_inv.png", 6/16, 4/16, wheat_seed_drop, {"mcl_flowers:tallgrass 2"}, false, true, fortune_wheat_seed_drop)
+add_large_plant("double_fern", S("Large Fern"), longdesc_fern, "mcl_flowers_double_plant_fern_bottom.png", "mcl_flowers_double_plant_fern_top.png", "mcl_flowers_double_plant_fern_inv.png", 5/16, 5/16, wheat_seed_drop, {"mcl_flowers:fern 2"}, false, true, fortune_wheat_seed_drop)
 
 minetest.register_abm({
 	label = "Pop out flowers",
@@ -418,7 +446,14 @@ minetest.register_node("mcl_flowers:waterlily", {
 	liquids_pointable = true,
 	walkable = true,
 	sunlight_propagates = true,
+<<<<<<< HEAD
 	groups = {dig_immediate = 3, plant=1, dig_by_water = 1,destroy_by_lava_flow=1, dig_by_piston = 1, deco_block=1, dig_by_boat=1, compostability=65},
+=======
+	groups = {
+		deco_block = 1, plant = 1, compostability = 65, destroy_by_lava_flow = 1,
+		dig_immediate = 3, dig_by_water = 1, dig_by_piston = 1, dig_by_boat = 1,
+	},
+>>>>>>> mcl2/master
 	sounds = mcl_sounds.node_sound_leaves_defaults(),
 	node_placement_prediction = "",
 	node_box = {

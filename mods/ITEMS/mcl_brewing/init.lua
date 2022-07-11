@@ -369,6 +369,9 @@ local function allow_take(pos, listname, index, stack, player)
 		minetest.record_protection_violation(pos, name)
 		return 0
 	else
+		if listname == "stand" then
+			awards.unlock(name, "mcl:localBrewery")
+		end
 		return stack:get_count()
 	end
 end
@@ -959,7 +962,7 @@ minetest.register_craft({
 	output = "mcl_brewing:stand_000",
 	recipe = {
 		{ "", "mcl_mobitems:blaze_rod", "" },
-		{ "mcl_core:cobble", "mcl_core:cobble", "mcl_core:cobble" },
+		{ "group:cobble", "group:cobble", "group:cobble" },
 	}
 })
 

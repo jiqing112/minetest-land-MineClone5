@@ -741,7 +741,11 @@ minetest.register_craftitem("mcl_ocean:kelp", {
 	inventory_image = "mcl_ocean_kelp_item.png",
 	wield_image = "mcl_ocean_kelp_item.png",
 	on_place = kelp.kelp_on_place,
+<<<<<<< HEAD
 	groups = { deco_block = 1, compostability=30 },
+=======
+	groups = {deco_block = 1, compostability = 30},
+>>>>>>> mcl2/master
 })
 
 if mod_doc then
@@ -756,7 +760,11 @@ minetest.register_craftitem("mcl_ocean:dried_kelp", {
 	_doc_items_longdesc = S("Dried kelp is a food item."),
 	inventory_image = "mcl_ocean_dried_kelp.png",
 	wield_image = "mcl_ocean_dried_kelp.png",
+<<<<<<< HEAD
 	groups = { food = 2, eatable = 1, compostability=30 },
+=======
+	groups = {food = 2, eatable = 1, compostability = 30},
+>>>>>>> mcl2/master
 	on_place = minetest.item_eat(1),
 	on_secondary_use = minetest.item_eat(1),
 	_mcl_saturation = 0.6,
@@ -773,13 +781,20 @@ minetest.register_node("mcl_ocean:dried_kelp_block", {
 	description = S("Dried Kelp Block"),
 	_doc_items_longdesc = S("A decorative block that serves as a great furnace fuel."),
 	tiles = { "mcl_ocean_dried_kelp_top.png", "mcl_ocean_dried_kelp_bottom.png", "mcl_ocean_dried_kelp_side.png" },
+<<<<<<< HEAD
 	groups = { handy = 1, hoey = 1, building_block = 1, flammable = 2, fire_encouragement = 30, fire_flammability = 60, compostability=50 },
+=======
+	groups = {
+		handy = 1, hoey = 1, building_block = 1, compostability = 50,
+		flammable = 2, fire_encouragement = 30, fire_flammability = 60
+	},
+>>>>>>> mcl2/master
 	sounds = mcl_sounds.node_sound_leaves_defaults(),
 	paramtype2 = "facedir",
 	on_place = mcl_util.rotate_axis,
 	on_rotate = on_rotate,
 	_mcl_hardness = 0.5,
-	_mcl_blast_resistance = 12.5,
+	_mcl_blast_resistance = 2.5,
 })
 
 minetest.register_craft({

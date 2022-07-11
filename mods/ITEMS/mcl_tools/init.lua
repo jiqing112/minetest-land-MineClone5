@@ -110,7 +110,7 @@ minetest.register_tool("mcl_tools:pick_stone", {
 		punch_attack_uses = 66,
 	},
 	sound = { breaks = "default_tool_breaks" },
-	_repair_material = "mcl_core:cobble",
+	_repair_material = "group:cobble",
 	_mcl_toollike_wield = true,
 	_mcl_diggroups = {
 		pickaxey = { speed = 4, level = 3, uses = 132 }
@@ -177,6 +177,30 @@ minetest.register_tool("mcl_tools:pick_diamond", {
 	},
 	_mcl_upgradable = true,
 	_mcl_upgrade_item = "mcl_tools:pick_netherite"
+<<<<<<< HEAD
+})
+
+minetest.register_tool("mcl_tools:pick_netherite", {
+	description = S("Netherite Pickaxe"),
+	_doc_items_longdesc = pickaxe_longdesc,
+	inventory_image = "default_tool_netheritepick.png",
+	wield_scale = wield_scale,
+	groups = { tool=1, pickaxe=1, dig_speed_class=6, enchantability=10 },
+	tool_capabilities = {
+		-- 1/1.2
+		full_punch_interval = 0.83333333,
+		max_drop_level=5,
+		damage_groups = {fleshy=6},
+		punch_attack_uses = 1016,
+	},
+	sound = { breaks = "default_tool_breaks" },
+	_repair_material = "mcl_nether:netherite_ingot",
+	_mcl_toollike_wield = true,
+	_mcl_diggroups = {
+		pickaxey = { speed = 9.5, level = 6, uses = 2031 }
+	},
+=======
+>>>>>>> mcl2/master
 })
 
 minetest.register_tool("mcl_tools:pick_netherite", {
@@ -200,7 +224,7 @@ minetest.register_tool("mcl_tools:pick_netherite", {
 	},
 })
 
-local function make_grass_path(itemstack, placer, pointed_thing)
+local make_grass_path = function(itemstack, placer, pointed_thing)
 	-- Use pointed node's on_rightclick function first, if present
 	local node = minetest.get_node(pointed_thing.under)
 	if placer and not placer:get_player_control().sneak then
@@ -214,7 +238,7 @@ local function make_grass_path(itemstack, placer, pointed_thing)
 		return itemstack
 	end
 
-	if (minetest.get_item_group(node.name, "grass_block") == 1) then
+	if (minetest.get_item_group(node.name, "path_creation_possible") == 1) then
 		local above = table.copy(pointed_thing.under)
 		above.y = above.y + 1
 		if minetest.get_node(above).name == "air" then
@@ -261,7 +285,7 @@ if minetest.get_modpath("mcl_farming") then
 			minetest.sound_play({name="default_grass_footstep", gain=1}, {pos = pointed_thing.above}, true)
 			local dir = vector.subtract(pointed_thing.under, pointed_thing.above)
 			local param2 = minetest.dir_to_facedir(dir)
-			minetest.swap_node(pointed_thing.under, {name="mcl_farming:pumpkin_face", param2 = param2})
+			minetest.set_node(pointed_thing.under, {name="mcl_farming:pumpkin_face", param2 = param2})
 			minetest.add_item(pointed_thing.above, "mcl_farming:pumpkin_seeds 4")
 		end
 		return itemstack
@@ -306,7 +330,7 @@ minetest.register_tool("mcl_tools:shovel_stone", {
 	},
 	on_place = make_grass_path,
 	sound = { breaks = "default_tool_breaks" },
-	_repair_material = "mcl_core:cobble",
+	_repair_material = "group:cobble",
 	_mcl_toollike_wield = true,
 	_mcl_diggroups = {
 		shovely = { speed = 4, level = 3, uses = 132 }
@@ -464,7 +488,7 @@ minetest.register_tool("mcl_tools:axe_stone", {
 	},
 	on_place = make_stripped_trunk,
 	sound = { breaks = "default_tool_breaks" },
-	_repair_material = "mcl_core:cobble",
+	_repair_material = "group:cobble",
 	_mcl_toollike_wield = true,
 	_mcl_diggroups = {
 		axey = { speed = 4, level = 3, uses = 132 }
@@ -590,7 +614,7 @@ minetest.register_tool("mcl_tools:sword_stone", {
 		punch_attack_uses = 132,
 	},
 	sound = { breaks = "default_tool_breaks" },
-	_repair_material = "mcl_core:cobble",
+	_repair_material = "group:cobble",
 	_mcl_toollike_wield = true,
 	_mcl_diggroups = {
 		swordy = { speed = 4, level = 3, uses = 132 },

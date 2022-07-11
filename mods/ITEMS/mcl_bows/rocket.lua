@@ -18,23 +18,10 @@ local function dir_to_pitch(dir)
 	return -math.atan2(-dir.y, xz)
 end
 
-local function random_arrow_positions(positions, placement)
-	if positions == "x" then
-		return math.random(-4, 4)
-	elseif positions == "y" then
-		return math.random(0, 10)
-	end
-	if placement == "front" and positions == "z" then
-		return 3
-	elseif placement == "back" and positions == "z" then
-		return -3
-	end
-	return 0
-end
-
 local function damage_explosion(self, damagemulitplier)
-	mcl_explosions.explode(self.object:get_pos(), 3, {})
-	local objects = minetest.get_objects_inside_radius(self.object:get_pos(), 8)
+	local p = self.object:get_pos()
+	mcl_explosions.explode(p, 3, {})
+	local objects = minetest.get_objects_inside_radius(p, 8)
 	for _,obj in pairs(objects) do
 		if obj:is_player() then
 			mcl_util.deal_damage(obj, damagemulitplier - vector.distance(self.object:get_pos(), obj:get_pos()), {type = "explosion"})
@@ -52,10 +39,10 @@ end
 
 local function particle_explosion(self)
 	local particle_pattern = math.random(1, 3)
-	local fpitch = 0
-	local true_type = ""
-	local type = math.random(1,2)
-	local size = math.random(1,3)
+	local fpitch
+	--local true_type
+	local type = math.random(1, 2)
+	local size = math.random(1, 3)
 	local colors = {"red", "yellow", "blue", "green", "white"}
 	local this_colors = {colors[math.random(#colors)], colors[math.random(#colors)], colors[math.random(#colors)]}
 
@@ -67,11 +54,11 @@ local function particle_explosion(self)
 		fpitch = math.random(60, 70)
 	end
 
-	if type == 1 then
+	--[[if type == 1 then
 		true_type = "Popper"
 	else
 		true_type = "Floof"
-	end
+	end]]
 
 	if type == 1 then
 		minetest.sound_play("mcl_bows_firework", {
@@ -246,6 +233,7 @@ end
 
 local mod_awards = minetest.get_modpath("awards") and minetest.get_modpath("mcl_achievements")
 local mod_button = minetest.get_modpath("mesecons_button")
+local mod_target = minetest.get_modpath("mcl_target")
 
 minetest.register_craftitem("mcl_bows:rocket", {
 	description = S("Arrow"),
@@ -425,28 +413,33 @@ function ARROW_ENTITY.on_step(self, dtime)
 		end
 
 		-- Iterate through all objects and remember the closest attackable object
-		for k, obj in pairs(objs) do
-			local ok = false
-			-- Arrows can only damage players and mobs
-			if obj:is_player() then
-				ok = true
-			elseif obj:get_luaentity() then
-				if (obj:get_luaentity()._cmi_is_mob or obj:get_luaentity()._hittable_by_projectile) then
+		local arrow_dir = self.object:get_velocity()
+		--create a raycast from the arrow based on the velocity of the arrow to deal with lag
+		local raycast = minetest.raycast(pos, vector.add(pos, vector.multiply(arrow_dir, 0.1)), true, false)
+		for hitpoint in raycast do
+			if hitpoint.type == "object" then
+				-- find the closest object that is in the way of the arrow
+				local ok = false
+				if hitpoint.ref:is_player() then
 					ok = true
+				elseif hitpoint.ref:get_luaentity() then
+					if (hitpoint.ref:get_luaentity().is_mob or hitpoint.ref:get_luaentity()._hittable_by_projectile) then
+						ok = true
+					end
 				end
-			end
-
-			if ok then
-				local dist = vector.distance(pos, obj:get_pos())
-				if not closest_object or not closest_distance then
-					closest_object = obj
-					closest_distance = dist
-				elseif dist < closest_distance then
-					closest_object = obj
-					closest_distance = dist
+				if ok then
+					local dist = vector.distance(hitpoint.ref:get_pos(), pos)
+					if not closest_object or not closest_distance then
+						closest_object = hitpoint.ref
+						closest_distance = dist
+					elseif dist < closest_distance then
+						closest_object = hitpoint.ref
+						closest_distance = dist
+					end
 				end
 			end
 		end
+
 
 		-- If an attackable object was found, we will damage the closest one only
 
@@ -454,7 +447,7 @@ function ARROW_ENTITY.on_step(self, dtime)
 			local obj = closest_object
 			local is_player = obj:is_player()
 			local lua = obj:get_luaentity()
-			if obj == self._shooter and self._time_in_air > 1.02 or obj ~= self._shooter and (is_player or (lua and (lua._cmi_is_mob or lua._hittable_by_projectile))) then
+			if obj == self._shooter and self._time_in_air > 1.02 or obj ~= self._shooter and (is_player or (lua and (lua.is_mob or lua._hittable_by_projectile))) then
 				if obj:get_hp() > 0 then
 					-- Check if there is no solid node between arrow and object
 					local ray = minetest.raycast(self.object:get_pos(), obj:get_pos(), true)
@@ -579,6 +572,11 @@ function ARROW_ENTITY.on_step(self, dtime)
 
 				if mcl_burning.is_burning(self.object) and snode.name == "mcl_tnt:tnt" then
 					tnt.ignite(self._stuckin)
+				end
+
+				-- Activate target
+				if mod_target and snode.name == "mcl_target:target_off" then
+					mcl_target.hit(self._stuckin, 1) --10 redstone ticks
 				end
 
 				-- Push the button! Push, push, push the button!

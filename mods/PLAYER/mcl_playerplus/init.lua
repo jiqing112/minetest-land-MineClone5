@@ -36,9 +36,15 @@ local function player_collision(player)
 	local width = .75
 
 	for _,object in pairs(minetest.get_objects_inside_radius(pos, width)) do
+<<<<<<< HEAD
 		local luaentity = object:get_luaentity()
 		if object and ((mcl_util and mcl_util.is_player(object))
 		or (luaentity and luaentity._cmi_is_mob == true and object ~= player)) then
+=======
+
+		local ent = object:get_luaentity()
+		if (object:is_player() or (ent and ent.is_mob and object ~= player)) then
+>>>>>>> mcl2/master
 
 			local pos2 = object:get_pos()
 			local vec  = {x = pos.x - pos2.x, z = pos.z - pos2.z}
@@ -122,6 +128,12 @@ end
 
 local node_stand, node_stand_below, node_head, node_feet
 
+<<<<<<< HEAD
+=======
+-- This following part is 2 wrapper functions for player:set_bones
+-- and player:set_properties preventing them from being resent on
+-- every globalstep when they have not changed.
+>>>>>>> mcl2/master
 
 local function roundN(n, d)
 	if type(n) ~= "number" then return n end
@@ -158,6 +170,7 @@ local function props_changed(props,oldprops)
 	return changed,p
 end
 
+<<<<<<< HEAD
 --test if assert works
 assert(true)
 assert(not false)
@@ -172,17 +185,27 @@ assert(test_equal1==test_equal2)
 assert(test_equal1~=test_equal3)
 
 --testdata for roundN
+=======
+--tests for roundN
+>>>>>>> mcl2/master
 local test_round1=15
 local test_round2=15.00199999999
 local test_round3=15.00111111
 local test_round4=15.00999999
 
+<<<<<<< HEAD
 assert(roundN(test_round1,2)==roundN(test_round1,2)) --test again if basic equality works because wth not
+=======
+assert(roundN(test_round1,2)==roundN(test_round1,2))
+>>>>>>> mcl2/master
 assert(roundN(test_round1,2)==roundN(test_round2,2))
 assert(roundN(test_round1,2)==roundN(test_round3,2))
 assert(roundN(test_round1,2)~=roundN(test_round4,2))
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> mcl2/master
 -- tests for close_enough
 local test_cb = {-0.35,0,-0.35,0.35,0.8,0.35} --collisionboxes
 local test_cb_close = {-0.351213,0,-0.35,0.35,0.8,0.351212}
@@ -197,6 +220,7 @@ local test_nt_diff = { r = 225, b = 225, a = 0, g = 225 }
 
 assert(close_enough(test_cb,test_cb_close))
 assert(not close_enough(test_cb,test_cb_diff))
+<<<<<<< HEAD
 
 assert(close_enough(test_eh,test_eh_close))
 assert(not close_enough(test_eh,test_eh_diff))
@@ -209,12 +233,27 @@ local test_properties_set2={collisionbox = {-0.35,0,-0.35,0.35,0.8,0.35}, eye_he
 
 local test_p1,p=props_changed(test_properties_set1,test_properties_set1)
 local test_p2,p=props_changed(test_properties_set1,test_properties_set2)
+=======
+assert(close_enough(test_eh,test_eh_close))
+assert(not close_enough(test_eh,test_eh_diff))
+assert(not close_enough(test_nt,test_nt_diff)) --no floats involved here
+
+--tests for properties_changed
+local test_properties_set1={collisionbox = {-0.35,0,-0.35,0.35,0.8,0.35}, eye_height = 0.65, nametag_color = { r = 225, b = 225, a = 225, g = 225 }}
+local test_properties_set2={collisionbox = {-0.35,0,-0.35,0.35,0.8,0.35}, eye_height = 1.35, nametag_color = { r = 225, b = 225, a = 225, g = 225 }}
+
+local test_p1,_=props_changed(test_properties_set1,test_properties_set1)
+local test_p2,_=props_changed(test_properties_set1,test_properties_set2)
+>>>>>>> mcl2/master
 
 assert(not test_p1)
 assert(test_p2)
 
+<<<<<<< HEAD
 -- we still don't really know if lua is lying to us! but at least everything *seems* to be ok
 
+=======
+>>>>>>> mcl2/master
 local function set_properties_conditional(player,props)
 	local changed,p=props_changed(props,player:get_properties())
 	if changed then
@@ -229,6 +268,12 @@ local function set_bone_position_conditional(player,b,p,r) --bone,position,rotat
 	end
 	player:set_bone_position(b,p,r)
 end
+<<<<<<< HEAD
+=======
+
+
+
+>>>>>>> mcl2/master
 minetest.register_globalstep(function(dtime)
 
 	time = time + dtime
@@ -257,8 +302,7 @@ minetest.register_globalstep(function(dtime)
 		
 		--[[
 		if player_velocity.x + player_velocity.y < .5 and c_x + c_y > 0 then
-			local add_velocity = player.add_player_velocity or player.add_velocity
-			add_velocity(player, {x = c_x, y = 0, z = c_y})
+			player:add_velocity({x = c_x, y = 0, z = c_y})
 			player_velocity = player:get_velocity() or player:get_player_velocity()
 		end
 		]]--
@@ -311,8 +355,7 @@ minetest.register_globalstep(function(dtime)
 			if elytra.rocketing > 0 then
 				elytra.rocketing = elytra.rocketing - dtime
 				if vector.length(player_velocity) < 40 then
-					local add_velocity = player.add_velocity or player.add_player_velocity
-					add_velocity(player, vector.multiply(player:get_look_dir(), 4))
+					player:add_velocity(vector.multiply(player:get_look_dir(), 4))
 					add_particle({
 						pos = fly_pos,
 						velocity = {x = 0, y = 0, z = 0},
@@ -332,6 +375,7 @@ minetest.register_globalstep(function(dtime)
 		end
 
 		if wielded_def and wielded_def._mcl_toollike_wield then
+<<<<<<< HEAD
 			set_bone_position_conditional(player,"Wield_Item", vector.new(0,4.7,3.1), vector.new(-90,225,90))
 		elseif string.find(wielded:get_name(), "mcl_bows:bow") then
 			set_bone_position_conditional(player,"Wield_Item", vector.new(1,4,0), vector.new(90,130,115))
@@ -345,6 +389,22 @@ minetest.register_globalstep(function(dtime)
 			set_bone_position_conditional(player,"Wield_Item", vector.new(0,5.3,2), vector.new(90,0,0))
 		end
 
+=======
+			set_bone_position_conditional(player,"Wield_Item", vector.new(0,3.9,1.3), vector.new(90,0,0))
+		elseif string.find(wielded:get_name(), "mcl_bows:bow") then
+			set_bone_position_conditional(player,"Wield_Item", vector.new(.5,4.5,-1.6), vector.new(90,0,20))
+		elseif string.find(wielded:get_name(), "mcl_bows:crossbow_loaded") then
+			set_bone_position_conditional(player,"Wield_Item", vector.new(-1.5,5.7,1.8), vector.new(64,90,0))
+		elseif string.find(wielded:get_name(), "mcl_bows:crossbow") then
+			set_bone_position_conditional(player,"Wield_Item", vector.new(-1.5,5.7,1.8), vector.new(90,90,0))
+		else
+			set_bone_position_conditional(player,"Wield_Item", vector.new(-1.5,4.9,1.8), vector.new(135,0,90))
+		end
+
+		player_velocity_old = player:get_velocity() or player:get_player_velocity()
+
+
+>>>>>>> mcl2/master
 		-- controls right and left arms pitch when shooting a bow or blocking
 		if mcl_shields.is_blocking(player) == 2 then
 			set_bone_position_conditional(player, "Arm_Right_Pitch_Control", vector.new(-3, 5.785, 0), vector.new(20, -20, 0))

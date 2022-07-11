@@ -59,7 +59,11 @@ minetest.register_node("mcl_nether:ancient_debris", {
 	tiles = {"mcl_nether_ancient_debris_top.png", "mcl_nether_ancient_debris_side.png"},
 	is_ground_content = true,
 	groups = {pickaxey=4, building_block=1, material_stone=1, xp=0},
+<<<<<<< HEAD
 	drop = 'mcl_nether:ancient_debris',
+=======
+	drop = "mcl_nether:ancient_debris",
+>>>>>>> mcl2/master
 	sounds = mcl_sounds.node_sound_stone_defaults(),
 	_mcl_blast_resistance = 1200,
 	_mcl_hardness = 30,
@@ -73,11 +77,20 @@ minetest.register_node("mcl_nether:netheriteblock", {
 	tiles = {"mcl_nether_netheriteblock.png"},
 	is_ground_content = true,
 	groups = {pickaxey=4, building_block=1, material_stone=1, xp = 0},
+<<<<<<< HEAD
 	drop = 'mcl_nether:netheriteblock',
 	sounds = mcl_sounds.node_sound_stone_defaults(),
 	_mcl_blast_resistance = 1200,
 	_mcl_hardness = 50,
 	_mcl_silk_touch_drop = true
+=======
+	drop = "mcl_nether:netheriteblock",
+	sounds = mcl_sounds.node_sound_stone_defaults(),
+	_mcl_blast_resistance = 1200,
+	_mcl_hardness = 50,
+	_mcl_silk_touch_drop = true,
+	_mcl_fortune_drop = mcl_core.fortune_drop_ore
+>>>>>>> mcl2/master
 })
 
 -- For eternal fire on top of netherrack and magma blocks
@@ -135,7 +148,8 @@ minetest.register_node("mcl_nether:magma", {
 	sounds = mcl_sounds.node_sound_stone_defaults(),
 	-- From walkover mod
 	on_walk_over = function(loc, nodeiamon, player)
-		if player and player:get_player_control().sneak or minetest.global_exists("mcl_potions") and mcl_potions.player_has_effect(player, "fire_proof") then
+		local armor_feet = player:get_inventory():get_stack("armor", 5)
+		if player and player:get_player_control().sneak or (minetest.global_exists("mcl_enchanting") and mcl_enchanting.has_enchantment(armor_feet, "frost_walker")) or (minetest.global_exists("mcl_potions") and mcl_potions.player_has_effect(player, "fire_proof")) then
 			return
 		end
 		-- Hurt players standing on top of this block
@@ -158,7 +172,7 @@ minetest.register_node("mcl_nether:soul_sand", {
 	stack_max = 64,
 	tiles = {"mcl_nether_soul_sand.png"},
 	is_ground_content = true,
-	groups = {handy=1,shovely=1, building_block=1,soil_nether_wart=1, material_sand=1},
+	groups = {handy = 1, shovely = 1, building_block = 1, soil_nether_wart = 1, material_sand = 1, soul_block = 1 },
 	collision_box = {
 		type = "fixed",
 		fixed = { -0.5, -0.5, -0.5, 0.5, 0.5 - 2/16, 0.5 },
@@ -201,7 +215,11 @@ minetest.register_node("mcl_nether:nether_wart_block", {
 	stack_max = 64,
 	tiles = {"mcl_nether_nether_wart_block.png"},
 	is_ground_content = false,
+<<<<<<< HEAD
 	groups = {handy=1, hoey=1, building_block=1, compostability=85},
+=======
+	groups = {handy=1, hoey=1, building_block=1, compostability = 85},
+>>>>>>> mcl2/master
 	sounds = mcl_sounds.node_sound_leaves_defaults(
 		{
 			footstep={name="default_dirt_footstep", gain=0.7},
@@ -390,27 +408,45 @@ minetest.register_craft({
 minetest.register_craft({
 	output = "mcl_nether:netherite_ingot",
 	recipe = {
+<<<<<<< HEAD
 		{'mcl_nether:netherite_scrap', 'mcl_nether:netherite_scrap', 'mcl_nether:netherite_scrap'},
 		{'mcl_nether:netherite_scrap', 'mcl_core:gold_ingot', 'mcl_core:gold_ingot'},
 		{'mcl_core:gold_ingot', 'mcl_core:gold_ingot', ''},
+=======
+		{"mcl_nether:netherite_scrap", "mcl_nether:netherite_scrap", "mcl_nether:netherite_scrap"},
+		{"mcl_nether:netherite_scrap", "mcl_core:gold_ingot", "mcl_core:gold_ingot"},
+		{"mcl_core:gold_ingot", "mcl_core:gold_ingot", ""},
+>>>>>>> mcl2/master
 	}
 })
 
 minetest.register_craft({
 	output = "mcl_nether:netheriteblock",
 	recipe = {
+<<<<<<< HEAD
 		{'mcl_nether:netherite_ingot', 'mcl_nether:netherite_ingot', 'mcl_nether:netherite_ingot'},
 		{'mcl_nether:netherite_ingot', 'mcl_nether:netherite_ingot', 'mcl_nether:netherite_ingot'},
 		{'mcl_nether:netherite_ingot', 'mcl_nether:netherite_ingot', 'mcl_nether:netherite_ingot'}
+=======
+		{"mcl_nether:netherite_ingot", "mcl_nether:netherite_ingot", "mcl_nether:netherite_ingot"},
+		{"mcl_nether:netherite_ingot", "mcl_nether:netherite_ingot", "mcl_nether:netherite_ingot"},
+		{"mcl_nether:netherite_ingot", "mcl_nether:netherite_ingot", "mcl_nether:netherite_ingot"}
+>>>>>>> mcl2/master
 	}
 })
 
 minetest.register_craft({
 	output = "mcl_nether:netherite_ingot 9",
 	recipe = {
+<<<<<<< HEAD
 		{'mcl_nether:netheriteblock', '', ''},
 		{'', '', ''},
 		{'', '', ''}
+=======
+		{"mcl_nether:netheriteblock", "", ""},
+		{"", "", ""},
+		{"", "", ""}
+>>>>>>> mcl2/master
 	}
 })
 

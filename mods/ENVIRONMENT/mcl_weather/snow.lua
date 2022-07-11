@@ -2,21 +2,21 @@ local get_connected_players = minetest.get_connected_players
 
 mcl_weather.snow = {}
 
-mcl_weather.snow.particles_count = 15
+local PARTICLES_COUNT_SNOW = tonumber(minetest.settings:get("mcl_weather_snow_particles")) or 99
 mcl_weather.snow.init_done = false
 
 local psdef= {
-	amount = 99,
+	amount = PARTICLES_COUNT_SNOW,
 	time = 0, --stay on til we turn it off
-	minpos = vector.new(-15,-5,-15),
-	maxpos =vector.new(15,10,15),
-	minvel = vector.new(0,-1,0),
-	maxvel = vector.new(0,-4,0),
+	minpos = vector.new(-25,20,-25),
+	maxpos =vector.new(25,25,25),
+	minvel = vector.new(-0.2,-1,-0.2),
+	maxvel = vector.new(0.2,-4,0.2),
 	minacc = vector.new(0,-1,0),
 	maxacc = vector.new(0,-4,0),
-	minexptime = 1,
-	maxexptime = 1,
-	minsize = 0.5,
+	minexptime = 3,
+	maxexptime = 5,
+	minsize = 2,
 	maxsize = 5,
 	collisiondetection = true,
 	collision_removal = true,
@@ -70,13 +70,13 @@ minetest.register_globalstep(function(dtime)
 	end
 
 	for _, player in pairs(get_connected_players()) do
-		if (mcl_weather.is_underwater(player) or not mcl_worlds.has_weather(player:get_pos()) or not mcl_weather.is_outdoor(player:get_pos())) then
+		if mcl_weather.is_underwater(player) or not mcl_worlds.has_weather(player:get_pos()) then
 			mcl_weather.remove_spawners_player(player)
-			return false
-		end
-		for i=1,2 do
-			psdef.texture="weather_pack_snow_snowflake"..i..".png"
-			mcl_weather.add_spawner_player(player,"snow"..i,psdef)
+		else
+			for i=1,2 do
+				psdef.texture="weather_pack_snow_snowflake"..i..".png"
+				mcl_weather.add_spawner_player(player,"snow"..i,psdef)
+			end
 		end
 	end
 end)

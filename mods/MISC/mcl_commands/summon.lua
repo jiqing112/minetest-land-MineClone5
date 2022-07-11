@@ -3,9 +3,18 @@ local S = minetest.get_translator(minetest.get_current_modname())
 local orig_func = minetest.registered_chatcommands["spawnentity"].func
 local cmd = table.copy(minetest.registered_chatcommands["spawnentity"])
 cmd.func = function(name, param)
+<<<<<<< HEAD
 	local params = param:split(" ")
 	if not params[1] or params[3] then
 		return false, S("Usage: /spawnentity <EntityName> [<X>,<Y>,<Z>]")
+=======
+	local ent = minetest.registered_entities[param]
+	if minetest.settings:get_bool("only_peaceful_mobs", false) and ent and ent.is_mob and ent.type == "monster" then
+		return false, S("Only peaceful mobs allowed!")
+	else
+		local bool, msg = orig_func(name, param)
+		return bool, msg
+>>>>>>> mcl2/master
 	end
 	local entity_name = params[1]
 	local pos = params[2]

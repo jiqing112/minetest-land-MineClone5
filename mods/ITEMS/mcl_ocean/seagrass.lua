@@ -85,7 +85,11 @@ minetest.register_craftitem("mcl_ocean:seagrass", {
 	inventory_image = "mcl_ocean_seagrass.png^[verticalframe:12:0",
 	wield_image = "mcl_ocean_seagrass.png^[verticalframe:12:0",
 	on_place = seagrass_on_place,
+<<<<<<< HEAD
 	groups = { deco_block = 1, compostability=30 },
+=======
+	groups = {deco_block = 1, compostability = 30},
+>>>>>>> mcl2/master
 })
 
 -- Seagrass nodes: seagrass on a surface node

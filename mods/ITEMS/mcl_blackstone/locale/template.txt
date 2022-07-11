@@ -1,7 +1,7 @@
 # textdomain: mcl_blackstone
 Blackstone=
 Polished Blackstone=
-Chiseled Polished Blackstone=
+Chieseled Polished Blackstone=
 Polished Blackstone Bricks=
 Basalt=
 Polished Basalt=
@@ -21,4 +21,3 @@ Eternal Soul Fire=
 Gilded Blackstone=
 Nether Gold Ore=
 Smooth Basalt=
-Blackstone Wall=

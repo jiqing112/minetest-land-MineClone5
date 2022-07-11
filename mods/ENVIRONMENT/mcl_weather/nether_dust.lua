@@ -1,8 +1,10 @@
 mcl_weather.nether_dust = {}
 mcl_weather.nether_dust.particlespawners = {}
 
+local PARTICLES_COUNT_NETHER_DUST = tonumber(minetest.settings:get("mcl_weather_rain_particles")) or 150
+
 local psdef= {
-	amount = 150,
+	amount = PARTICLES_COUNT_NETHER_DUST,
 	time = 0,
 	minpos = vector.new(-15,-15,-15),
 	maxpos =vector.new(15,15,15),
@@ -21,14 +23,14 @@ local psdef= {
 }
 
 local function check_player(player)
-	local name=player:get_player_name(player)
+	local name=player:get_player_name()
 	if mcl_worlds.has_dust(player:get_pos()) and not mcl_weather.nether_dust.particlespawners[name] then
 		return true
-	end	
+	end
 end
 
 mcl_weather.nether_dust.add_particlespawners = function(player)
-	local name=player:get_player_name(player)
+	local name=player:get_player_name()
 	mcl_weather.nether_dust.particlespawners[name]={}
 	psdef.playername = name
 	psdef.attached = player
@@ -40,12 +42,12 @@ mcl_weather.nether_dust.add_particlespawners = function(player)
 end
 
 mcl_weather.nether_dust.delete_particlespawners = function(player)
-	local name=player:get_player_name(player)
+	local name=player:get_player_name()
 	if mcl_weather.nether_dust.particlespawners[name] then
 		for i=1,3 do
 			minetest.delete_particlespawner(mcl_weather.nether_dust.particlespawners[name][i])
 		end
-		mcl_weather.nether_dust.particlespawners[name]=nil		
+		mcl_weather.nether_dust.particlespawners[name]=nil
 	end
 end
 

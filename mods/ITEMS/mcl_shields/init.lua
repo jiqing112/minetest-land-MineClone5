@@ -8,7 +8,11 @@ mcl_shields = {
 		player = true,
 		arrow = true,
 		generic = true,
+<<<<<<< HEAD
 		explosion = true, -- ghasts don't work
+=======
+		explosion = true,
+>>>>>>> mcl2/master
 		dragon_breath = true,
 	},
 	enchantments = {"mending", "unbreaking"},
@@ -22,8 +26,11 @@ interact_priv.give_to_admin = false
 local overlay = mcl_enchanting.overlay
 local hud = "mcl_shield_hud.png"
 
+<<<<<<< HEAD
 local is_player = mcl_util.is_player
 
+=======
+>>>>>>> mcl2/master
 minetest.register_tool("mcl_shields:shield", {
 	description = S("Shield"),
 	_doc_items_longdesc = S("A shield is a tool used for protecting the player against attacks."),
@@ -32,7 +39,11 @@ minetest.register_tool("mcl_shields:shield", {
 	groups = {
 		shield = 1,
 		weapon = 1,
+<<<<<<< HEAD
 		enchantability = 1,
+=======
+		enchantability = -1,
+>>>>>>> mcl2/master
 		no_wieldview = 1,
 		offhand_item = 1,
 	},
@@ -69,6 +80,7 @@ minetest.register_entity("mcl_shields:shield_entity", {
 	},
 	_blocking = false,
 	_shield_number = 2,
+<<<<<<< HEAD
 	on_step = function(self, dtime, moveresult)
 		local player = self.object:get_attach()
 		if player then
@@ -101,6 +113,44 @@ minetest.register_entity("mcl_shields:shield_entity", {
 		else
 			self.object:remove()
 		end
+=======
+	_texture_copy = "",
+	on_step = function(self, dtime, moveresult)
+		local player = self.object:get_attach()
+		if not player then
+			self.object:remove()
+			return
+		end
+		local shield_texture = "mcl_shield_base_nopattern.png"
+		local i = self._shield_number
+		local item = wielded_item(player, i)
+
+		if item ~= "mcl_shields:shield" and item ~= "mcl_shields:shield_enchanted" then
+			local itemstack = player:get_wielded_item()
+			if i == 1 then
+				itemstack = player:get_inventory():get_stack("offhand", 1)
+			end
+			local meta_texture = itemstack:get_meta():get_string("mcl_shields:shield_custom_pattern_texture")
+			if meta_texture ~= "" then
+				shield_texture = meta_texture
+			else
+				local color = minetest.registered_items[item]._shield_color
+				if color then
+					shield_texture = "mcl_shield_base_nopattern.png^(mcl_shield_pattern_base.png^[colorize:" .. color .. ")"
+				end
+			end
+		end
+
+		if shield_is_enchanted(player, i) then
+			shield_texture = shield_texture .. overlay
+		end
+
+		if self._texture_copy ~= shield_texture then
+			self.object:set_properties({textures = {shield_texture}})
+		end
+
+		self._texture_copy = shield_texture
+>>>>>>> mcl2/master
 	end,
 })
 
@@ -109,6 +159,7 @@ for _, e in pairs(mcl_shields.enchantments) do
 end
 
 function mcl_shields.is_blocking(obj)
+<<<<<<< HEAD
 	if not mcl_util or not mcl_util.is_player(obj) then return end
 	local blocking = mcl_shields.players[obj].blocking
 	if blocking > 0 then
@@ -118,12 +169,26 @@ function mcl_shields.is_blocking(obj)
 		end
 		return blocking, shieldstack
 	end
+=======
+	if not obj:is_player() then return end
+	local blocking = mcl_shields.players[obj].blocking
+	if blocking <= 0 then
+		return
+	end
+
+	local shieldstack = obj:get_wielded_item()
+	if blocking == 1 then
+		shieldstack = obj:get_inventory():get_stack("offhand", 1)
+	end
+	return blocking, shieldstack
+>>>>>>> mcl2/master
 end
 
 mcl_damage.register_modifier(function(obj, damage, reason)
 	local type = reason.type
 	local damager = reason.direct
 	local blocking, shieldstack = mcl_shields.is_blocking(obj)
+<<<<<<< HEAD
 	if is_player(obj) and blocking and mcl_shields.types[type] and damager then
 		local entity = damager:get_luaentity()
 		if entity and (type == "arrow" or type == "generic") then
@@ -148,6 +213,46 @@ mcl_damage.register_modifier(function(obj, damage, reason)
 			return 0
 		end
 	end
+=======
+
+	if not (obj:is_player() and blocking and mcl_shields.types[type] and damager) then
+		return
+	end
+
+	local entity = damager:get_luaentity()
+	if entity and entity._shooter then
+		damager = entity._shooter
+	end
+
+	local dpos = damager:get_pos()
+
+	-- Used for removed / killed entities before the projectile hits the player
+	if entity and not entity._shooter and entity._saved_shooter_pos then
+		dpos = entity._saved_shooter_pos
+	end
+
+	if not dpos or vector.dot(obj:get_look_dir(), vector.subtract(dpos, obj:get_pos())) < 0 then
+		return
+	end
+
+	local durability = 336
+	local unbreaking = mcl_enchanting.get_enchantment(shieldstack, mcl_shields.enchantments[2])
+	if unbreaking > 0 then
+		durability = durability * (unbreaking + 1)
+	end
+
+	if not minetest.is_creative_enabled(obj:get_player_name()) and damage >= 3 then
+		shieldstack:add_wear(65535 / durability)
+		if blocking == 2 then
+			obj:set_wielded_item(shieldstack)
+		else
+			obj:get_inventory():set_stack("offhand", 1, shieldstack)
+			mcl_inventory.update_inventory_formspec(obj)
+		end
+	end
+	minetest.sound_play({name = "mcl_block"})
+	return 0
+>>>>>>> mcl2/master
 end)
 
 local function modify_shield(player, vpos, vrot, i)
@@ -155,6 +260,7 @@ local function modify_shield(player, vpos, vrot, i)
 	if i == 1 then
 		arm = "Left"
 	end
+<<<<<<< HEAD
 	local player_data = mcl_shields.players[player]
 	if not player_data then return end
 	local shields = player_data.shields
@@ -162,6 +268,12 @@ local function modify_shield(player, vpos, vrot, i)
 	local shield = shields[i]
 	if not shield then return end
 	shield:set_attach(player, "Arm_" .. arm, vpos, vrot, false)
+=======
+	local shield = mcl_shields.players[player].shields[i]
+	if shield then
+		shield:set_attach(player, "Arm_" .. arm, vpos, vrot, false)
+	end
+>>>>>>> mcl2/master
 end
 
 local function set_shield(player, block, i)
@@ -180,20 +292,38 @@ local function set_shield(player, block, i)
 	end
 	local shield = mcl_shields.players[player].shields[i]
 	if not shield then return end
+<<<<<<< HEAD
 	local luaentity = shield:get_luaentity()
 	if not luaentity then return end
+=======
+
+	local luaentity = shield:get_luaentity()
+	if not luaentity then return end
+
+>>>>>>> mcl2/master
 	luaentity._blocking = block
 end
 
 local function set_interact(player, interact)
 	local player_name = player:get_player_name()
 	local privs = minetest.get_player_privs(player_name)
+<<<<<<< HEAD
 	if privs.interact ~= interact then
 		local meta = player:get_meta()
 		if meta:get_int("interact_revoked") ~= 1 then
 			privs.interact = interact
 			minetest.set_player_privs(player_name, privs)
 		end
+=======
+	if privs.interact == interact then
+		return
+	end
+	local meta = player:get_meta()
+	if meta:get_int("mcl_privs:interact_revoked") ~= 1 then
+		privs.interact = interact
+		minetest.set_player_privs(player_name, privs)
+		meta:set_int("mcl_privs:interact_revoked",0)
+>>>>>>> mcl2/master
 	end
 end
 
@@ -207,7 +337,11 @@ local function remove_shield_hud(player)
 		set_shield(player, false, 2)
 	end
 
+<<<<<<< HEAD
 	local hf=player:hud_get_flags()
+=======
+	local hf = player:hud_get_flags()
+>>>>>>> mcl2/master
 	if not hf.wielditem then
 		player:hud_set_flags({wielditem = true})
 	end
@@ -234,6 +368,7 @@ end
 local function handle_blocking(player)
 	local player_shield = mcl_shields.players[player]
 	local rmb = player:get_player_control().RMB
+<<<<<<< HEAD
 	if rmb then
 		local shield_in_offhand = mcl_shields.wielding_shield(player, 1)
 		local shield_in_hand = mcl_shields.wielding_shield(player)
@@ -267,6 +402,45 @@ local function handle_blocking(player)
 			end
 		else
 			player_shield.blocking = 0
+=======
+	if not rmb then
+		player_shield.blocking = 0
+		return
+	end
+
+	local shield_in_offhand = mcl_shields.wielding_shield(player, 1)
+	local shield_in_hand = mcl_shields.wielding_shield(player)
+	local not_blocking = player_shield.blocking == 0
+
+	local pos = player:get_pos()
+	if shield_in_hand then
+		if not_blocking then
+			minetest.after(0.25, function()
+				if (not_blocking or not shield_in_offhand) and shield_in_hand and rmb then
+					player_shield.blocking = 2
+					set_shield(player, true, 2)
+				end
+			end)
+		elseif not shield_in_offhand then
+			player_shield.blocking = 2
+		end
+	elseif shield_in_offhand then
+		local offhand_can_block = (wielded_item(player) == "" or not mcl_util.get_pointed_thing(player, true))
+		and (minetest.get_item_group(wielded_item(player), "bow") ~= 1 and minetest.get_item_group(wielded_item(player), "crossbow") ~= 1)
+
+		if not offhand_can_block then
+			return
+		end
+		if not_blocking then
+			minetest.after(0.25, function()
+				if (not_blocking or not shield_in_hand) and shield_in_offhand and rmb  and offhand_can_block then
+					player_shield.blocking = 1
+					set_shield(player, true, 1)
+				end
+			end)
+		elseif not shield_in_hand then
+			player_shield.blocking = 1
+>>>>>>> mcl2/master
 		end
 	else
 		player_shield.blocking = 0
@@ -292,13 +466,85 @@ local function update_shield_entity(player, blocking, i)
 	end
 end
 
+<<<<<<< HEAD
 minetest.register_globalstep(function(dtime)
 	for _, player in pairs(minetest.get_connected_players()) do if is_player(player) then
+=======
+local function add_shield_hud(shieldstack, player, blocking)
+	local texture = hud
+	if mcl_enchanting.is_enchanted(shieldstack:get_name()) then
+		texture = texture .. overlay
+	end
+	local offset = 100
+	if blocking == 1 then
+		texture = texture .. "^[transform4"
+		offset = -100
+	else
+		player:hud_set_flags({wielditem = false})
+	end
+	shield_hud[player] = player:hud_add({
+		hud_elem_type = "image",
+		position = {x = 0.5, y = 0.5},
+		scale = {x = -101, y = -101},
+		offset = {x = offset, y = 0},
+		text = texture,
+		z_index = -200,
+	})
+	playerphysics.add_physics_factor(player, "speed", "shield_speed", 0.5)
+	set_interact(player, nil)
+end
+
+local function update_shield_hud(player, blocking, shieldstack)
+	local shieldhud = shield_hud[player]
+	if not shieldhud then
+		add_shield_hud(shieldstack, player, blocking)
+		return
+	end
+
+	local wielditem = player:hud_get_flags().wielditem
+	if blocking == 1 then
+		if not wielditem then
+			player:hud_change(shieldhud, "text", hud .. "^[transform4")
+			player:hud_change(shieldhud, "offset", {x = -100, y = 0})
+			player:hud_set_flags({wielditem = true})
+		end
+	elseif wielditem then
+		player:hud_change(shieldhud, "text", hud)
+		player:hud_change(shieldhud, "offset", {x = 100, y = 0})
+		player:hud_set_flags({wielditem = false})
+	end
+
+	local image = player:hud_get(shieldhud).text
+	local enchanted = hud .. overlay
+	local enchanted1 = image == enchanted
+	local enchanted2 = image == enchanted .. "^[transform4"
+	if mcl_enchanting.is_enchanted(shieldstack:get_name()) then
+		if not enchanted1 and not enchanted2 then
+			if blocking == 1 then
+				player:hud_change(shieldhud, "text", hud .. overlay .. "^[transform4")
+			else
+				player:hud_change(shieldhud, "text", hud .. overlay)
+			end
+		end
+	elseif enchanted1 or enchanted2 then
+		if blocking == 1 then
+			player:hud_change(shieldhud, "text", hud .. "^[transform4")
+		else
+			player:hud_change(shieldhud, "text", hud)
+		end
+	end
+end
+
+minetest.register_globalstep(function(dtime)
+	for _, player in pairs(minetest.get_connected_players()) do
+
+>>>>>>> mcl2/master
 		handle_blocking(player)
 
 		local blocking, shieldstack = mcl_shields.is_blocking(player)
 
 		if blocking then
+<<<<<<< HEAD
 			local shieldhud = shield_hud[player]
 			if not shieldhud then
 				local texture = hud
@@ -358,6 +604,9 @@ minetest.register_globalstep(function(dtime)
 					end
 				end
 			end
+=======
+			update_shield_hud(player, blocking, shieldstack)
+>>>>>>> mcl2/master
 		else
 			remove_shield_hud(player)
 		end
@@ -365,7 +614,11 @@ minetest.register_globalstep(function(dtime)
 		for i = 1, 2 do
 			update_shield_entity(player, blocking, i)
 		end
+<<<<<<< HEAD
 	end end
+=======
+	end
+>>>>>>> mcl2/master
 end)
 
 minetest.register_on_dieplayer(function(player)
@@ -391,7 +644,12 @@ minetest.register_craft({
 })
 
 for _, colortab in pairs(mcl_banners.colors) do
+<<<<<<< HEAD
 	minetest.register_tool("mcl_shields:shield_" .. colortab[1], {
+=======
+	local color = colortab[1]
+	minetest.register_tool("mcl_shields:shield_" .. color, {
+>>>>>>> mcl2/master
 		description = S(colortab[6] .. " Shield"),
 		_doc_items_longdesc = S("A shield is a tool used for protecting the player against attacks."),
 		inventory_image = "mcl_shield.png^(mcl_shield_item_overlay.png^[colorize:" .. colortab[4] ..")",
@@ -399,7 +657,11 @@ for _, colortab in pairs(mcl_banners.colors) do
 		groups = {
 			shield = 1,
 			weapon = 1,
+<<<<<<< HEAD
 			enchantability = 1,
+=======
+			enchantability = -1,
+>>>>>>> mcl2/master
 			no_wieldview = 1,
 			not_in_creative_inventory = 1,
 			offhand_item = 1,
@@ -410,12 +672,26 @@ for _, colortab in pairs(mcl_banners.colors) do
 		_shield_color = colortab[4],
 	})
 
+<<<<<<< HEAD
 	local banner = "mcl_banners:banner_item_" .. colortab[1]
 	minetest.register_craft({
 		type = "shapeless",
 		output = "mcl_shields:shield_" .. colortab[1],
 		recipe = {"mcl_shields:shield", banner},
 	})
+=======
+	local banner = "mcl_banners:banner_item_" .. color
+	minetest.register_craft({
+		type = "shapeless",
+		output = "mcl_shields:shield_" .. color,
+		recipe = {"mcl_shields:shield", banner},
+	})
+	minetest.register_craft({
+		type = "shapeless",
+		output = "mcl_shields:shield_" .. color .. "_enchanted",
+		recipe = {"mcl_shields:shield_enchanted", banner},
+	})
+>>>>>>> mcl2/master
 end
 
 local function to_shield_texture(banner_texture)
@@ -427,6 +703,7 @@ local function to_shield_texture(banner_texture)
 end
 
 local function craft_banner_on_shield(itemstack, player, old_craft_grid, craft_inv)
+<<<<<<< HEAD
 	if string.find(itemstack:get_name(), "mcl_shields:shield_") then
 		local shield_stack
 		for i = 1, player:get_inventory():get_size("craft") do
@@ -457,6 +734,40 @@ local function craft_banner_on_shield(itemstack, player, old_craft_grid, craft_i
 		end
 	end
 	return itemstack
+=======
+	if not string.find(itemstack:get_name(), "mcl_shields:shield_") then
+		return itemstack
+	end
+
+	local shield_stack
+	for i = 1, player:get_inventory():get_size("craft") do
+		local stack = old_craft_grid[i]
+		local name = stack:get_name()
+		if minetest.get_item_group(name, "shield") then
+			shield_stack = stack
+			break
+		end
+	end
+
+	for i = 1, player:get_inventory():get_size("craft") do
+		local banner_stack = old_craft_grid[i]
+		local banner_name = banner_stack:get_name()
+		if string.find(banner_name, "mcl_banners:banner") and shield_stack then
+			local banner_meta = banner_stack:get_meta()
+			local layers_meta = banner_meta:get_string("layers")
+			local new_shield_meta = itemstack:get_meta()
+			if layers_meta ~= "" then
+				local color = mcl_banners.color_reverse(banner_name)
+				local layers = minetest.deserialize(layers_meta)
+				local texture = mcl_banners.make_banner_texture(color, layers)
+				new_shield_meta:set_string("description", mcl_banners.make_advanced_banner_description(itemstack:get_description(), layers))
+				new_shield_meta:set_string("mcl_shields:shield_custom_pattern_texture", to_shield_texture(texture))
+			end
+			itemstack:set_wear(shield_stack:get_wear())
+			break
+		end
+	end
+>>>>>>> mcl2/master
 end
 
 minetest.register_craft_predict(function(itemstack, player, old_craft_grid, craft_inv)

@@ -86,7 +86,6 @@ local function enable_physics(object, luaentity, ignore_check)
 		object:set_properties({
 			physical = true
 		})
-		object:set_velocity({x=0,y=0,z=0})
 		object:set_acceleration({x=0,y=-get_gravity(),z=0})
 	end
 end
@@ -118,7 +117,7 @@ minetest.register_globalstep(function(dtime)
 			if tick == true and pool[name] > 0 then
 				minetest.sound_play("item_drop_pickup", {
 					pos = pos,
-					gain = 0.7,
+					gain = 0.3,
 					max_hear_distance = 16,
 					pitch = math.random(70,110)/100
 				})
@@ -264,6 +263,8 @@ function minetest.handle_node_drops(pos, drops, digger)
 
 	local silk_touch_drop = false
 	local nodedef = minetest.registered_nodes[dug_node.name]
+	if not nodedef then return end
+
 	if shearsy_level and shearsy_level > 0 and nodedef._mcl_shears_drop then
 		if nodedef._mcl_shears_drop == true then
 			drops = { dug_node.name }
@@ -424,7 +425,11 @@ minetest.register_entity(":__builtin:item", {
 		end
 		local stack = ItemStack(itemstring)
 		if minetest.get_item_group(stack:get_name(), "compass") > 0 then
-			stack:set_name("mcl_compass:16")
+			if string.find(stack:get_name(), "_lodestone") then
+				stack:set_name("mcl_compass:18_lodestone")
+			else
+				stack:set_name("mcl_compass:18")
+			end
 			itemstring = stack:to_string()
 			self.itemstring = itemstring
 		end
@@ -777,8 +782,8 @@ minetest.register_entity(":__builtin:item", {
 			return
 		end
 
-		-- Move item around on flowing liquids
-		if def and def.liquidtype == "flowing" then
+		-- Move item around on flowing liquids; add 'source' check to allow items to continue flowing a bit in the source block of flowing water.
+		if def and def.liquidtype == "flowing" or def.liquidtype == "source" then
 
 			--[[ Get flowing direction (function call from flowlib), if there's a liquid.
 			NOTE: According to Qwertymine, flowlib.quickflow is only reliable for liquids with a flowing distance of 7.
@@ -787,35 +792,33 @@ minetest.register_entity(":__builtin:item", {
 			-- Just to make sure we don't manipulate the speed for no reason
 			if vec.x ~= 0 or vec.y ~= 0 or vec.z ~= 0 then
 				-- Minecraft Wiki: Flowing speed is "about 1.39 meters per second"
-				local f = item_drop_settings.fluid_flow_rate --1.39
-
+				local f = item_drop_settings.fluid_flow_rate or 1.2 --1.39
 				-- Apply the force of the flowing liquid onto the item's velocity
-				local newv = vector.multiply(vec, f) 
+				local newv = vector.multiply(vec, f)
 				self.object:set_acceleration({x = 0, y = 0, z = 0})
-
 				local oldvel = self.object:get_velocity() -- v is vector, vel is velocity
-
 				-- drag
 				local fluid_drag = item_drop_settings.fluid_drag
-
-                local floornn = minetest.get_node({x=p.x, y=p.y-0.5, z=p.z}).name
-                local floornode = floornn and minetest.registered_nodes[floornn]
+		                local floornn = minetest.get_node({x=p.x, y=p.y-0.5, z=p.z}).name
+		                local floornode = floornn and minetest.registered_nodes[floornn]
 				if floornode and minetest.get_item_group(floornode.name, "slippery") then
-				    -- scale fluid drag on slippery floors
-				    fluid_drag = fluid_drag * item_drop_settings.slippery_fluid_drag_factor
+					-- scale fluid drag on slippery floors
+					fluid_drag = fluid_drag * item_drop_settings.slippery_fluid_drag_factor
 				end
 
-                newv.x = newv.x - (oldvel.x - newv.x) * fluid_drag * dtime
-                newv.y = newv.y - (oldvel.y - newv.y) * fluid_drag * dtime
-                newv.z = newv.z - (oldvel.z - newv.z) * fluid_drag * dtime
+		                newv.x = newv.x - (oldvel.x - newv.x) * fluid_drag * dtime
+		                newv.y = newv.y - (oldvel.y - newv.y) * fluid_drag * dtime
+		                newv.z = newv.z - (oldvel.z - newv.z) * fluid_drag * dtime
 
-                newv.y = newv.y + -0.22 -- (keep slight downward thrust from previous version of code)
+		                newv.y = newv.y + -0.22 -- (keep slight downward thrust from previous version of code)
                                         -- NOTE:    is there any particular reason we have this, anyway?
                                         --          since fluid drag is now on, we could as well just
                                         --          apply gravity here; drag will slow down the fall
                                         --          realistically
 				
 				self.object:set_velocity({x = oldvel.x + newv.x * dtime, y = oldvel.y + newv.y * dtime, z = oldvel.z + newv.z * dtime})
+				-- Swap to acceleration instead of a static speed to better mimic MC mechanics.
+				-- self.object:set_acceleration({x = newv.x, y = -0.22, z = newv.z})
 
 				self.physical_state = true
 				self._flowing = true
@@ -836,8 +839,7 @@ minetest.register_entity(":__builtin:item", {
 		local nn = minetest.get_node({x=p.x, y=p.y-0.5, z=p.z}).name
 		local v = self.object:get_velocity()
 		local node = nn and minetest.registered_nodes[nn]
-
-		if not node or node.walkable and v.y == 0 then
+		if not node or node.walkable and v.y == 0 and not node.groups.slippery then
 			if self.physical_state then
 				local own_stack = ItemStack(self.object:get_luaentity().itemstring)
 				-- Merge with close entities of the same item

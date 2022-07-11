@@ -156,6 +156,7 @@ end)
 function mcl_worlds.get_cloud_parameters()
 	if mcl_mapgen.name == "valleys" then
 		return {
+			-- valleys has a much higher average elevation thus often "normal" landscape ends up in the clouds
 			height = 384,
 			speed = {x=-2, z=0},
 			thickness=5,

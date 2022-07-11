@@ -71,13 +71,13 @@ local loottable =
 			{ itemstring = "mcl_mobitems:saddle", weight = 20 },
 			{ itemstring = "mcl_jukebox:record_1", weight = 15 },
 			{ itemstring = "mcl_jukebox:record_4", weight = 15 },
-			{ itemstring = "mobs_mc:iron_horse_armor", weight = 15 },
+			{ itemstring = "mcl_mobitems:iron_horse_armor", weight = 15 },
 			{ itemstring = "mcl_core:apple_gold", weight = 15 },
 			{ itemstring = "mcl_books:book", weight = 10, func = function(stack, pr)
 				mcl_enchanting.enchant_uniform_randomly(stack, {"soul_speed"}, pr)
 			end },
-			{ itemstring = "mobs_mc:gold_horse_armor", weight = 10 },
-			{ itemstring = "mobs_mc:diamond_horse_armor", weight = 5 },
+			{ itemstring = "mcl_mobitems:gold_horse_armor", weight = 10 },
+			{ itemstring = "mcl_mobitems:diamond_horse_armor", weight = 5 },
 			{ itemstring = "mcl_core:apple_gold_enchanted", weight = 2 },
 		}
 	},
@@ -135,6 +135,7 @@ local function spawn_dungeon(p1, p2, dim, pr, dontcheck)
 	-- Check floor and ceiling: Must be *completely* solid
 	local y_floor = y
 	local y_ceiling = y + dim.y + 1
+<<<<<<< HEAD
 
 	if check then
 		local dim_x, dim_z = dim.x, dim.z
@@ -142,6 +143,15 @@ local function spawn_dungeon(p1, p2, dim, pr, dontcheck)
 		if #minetest_find_nodes_in_area({x=x+1,y=y_floor,z=z+1}, {x=x+dim_z,y=y_floor,z=z+dim_z}, "group:walkabke") < size
 		or #minetest_find_nodes_in_area({x=x+1,y=y_floor,z=z+1}, {x=x+dim_z,y=y_floor,z=z+dim_z}, "group:walkabke") < size then
 			return
+=======
+	if check then
+		for tx = x+1, x+dim.x do
+		for tz = z+1, z+dim.z do
+			local fdef = registered_nodes[get_node({x = tx, y = y_floor  , z = tz}).name]
+			local cdef = registered_nodes[get_node({x = tx, y = y_ceiling, z = tz}).name]
+			if not fdef or not fdef.walkable or not cdef or not cdef.walkable then return false end
+		end
+>>>>>>> mcl2/master
 		end
 	end
 
@@ -293,7 +303,8 @@ local function spawn_dungeon(p1, p2, dim, pr, dontcheck)
 		-- Do not overwrite nodes with is_ground_content == false (e.g. bedrock)
 		-- Exceptions: cobblestone and mossy cobblestone so neighborings dungeons nicely connect to each other
 		local name = get_node(p).name
-		if registered_nodes[name].is_ground_content or name == "mcl_core:cobble" or name == "mcl_core:mossycobble" then
+		local rn = registered_nodes[name]
+		if rn and rn.is_ground_content or name == "mcl_core:cobble" or name == "mcl_core:mossycobble" then
 			-- Floor
 			if ty == y then
 				if pr:next(1,4) == 1 then

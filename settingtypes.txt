@@ -20,6 +20,18 @@ enable_fire (Destructive and spreading fire) bool true
 # If enabled, the weather will change naturally over time.
 mcl_doWeatherCycle (Change weather) bool true
 
+# Amount of rain particles. You can reduce this to get better FPS (default: 500)
+mcl_weather_rain_particles (Rain particles) int 500 0
+
+# Amount of thunderstorm rain particles. You can reduce this to get better FPS (default: 900)
+mcl_weather_thunder_particles (Thunderstorm rain particles) int 900 0
+
+# Amount of snow particles. You can reduce this to get better FPS (default: 100)
+mcl_weather_snow_particles (Snow particles) int 100 0
+
+# Amount of nether dust particles. You can reduce this to get better FPS (default: 150)
+mcl_weather_snow_particles (Nether dust particles) int 150 0
+
 # If enabled, breaking blocks will cause them to drop as item.
 # Note that blocks never have drops when in Creative Mode.
 mcl_doTileDrops (Blocks have drops) bool true
@@ -100,9 +112,6 @@ fire_animation_frames (Fire Animation Frames) int 8
 
 # Whether to animate chests when open / close
 animated_chests (Animated chests) bool true
-
-# Whether to preview the player in inventory in 3D (requires Minetest 5.4)
-3d_player_preview (3D Player preview) bool true
 
 # The maximum number of boss bars to simultaniously display on the screen
 max_bossbars (Maximum Boss bars) int 5

@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 local S = minetest.get_translator(minetest.get_current_modname())
 local modpath = minetest.get_modpath(minetest.get_current_modname())
+=======
+local S = minetest.get_translator("mcl_lanterns")
+local modpath = minetest.get_modpath("mcl_lanterns")
+>>>>>>> mcl2/master
 
 mcl_lanterns = {}
 
@@ -9,6 +14,84 @@ TODO:
 - remove the hack arround walmounted nodes
 ]]
 
+<<<<<<< HEAD
+=======
+local allowed_non_solid_nodes_floor = {
+	"mcl_core:ice",
+	"mcl_nether:soul_sand",
+	"mcl_mobspawners:spawner",
+	"mcl_core:barrier",
+	"mcl_end:chorus_flower",
+	"mcl_end:chorus_flower_dead",
+	"mcl_end:end_rod",
+	"mcl_end:dragon_egg",
+	"mcl_portals:end_portal_frame_eye",
+	"mcl_lanterns:chain"
+}
+
+local allowed_non_solid_groups_floor = {"anvil", "wall", "glass", "fence", "fence_gate", "pane"}
+
+local allowed_non_solid_nodes_ceiling = {
+	"mcl_core:ice",
+	"mcl_nether:soul_sand",
+	"mcl_mobspawners:spawner",
+	"mcl_core:barrier",
+	"mcl_end:chorus_flower",
+	"mcl_end:chorus_flower_dead",
+	"mcl_end:end_rod",
+	"mcl_core:grass_path",
+	"mcl_lanterns:chain"
+}
+
+local allowed_non_solid_groups_ceiling = {"anvil", "wall", "glass", "fence", "fence_gate", "soil", "pane", "end_portal_frame"}
+
+local function check_placement(node, wdir)
+	local nn = node.name
+	local def = minetest.registered_nodes[nn]
+
+	if not def then
+		return false
+	else
+		--wdir:
+		--0: ceiling
+		--1: floor
+		if wdir == 0 then
+			if def.groups.solid or def.groups.opaque then
+				return true
+			else
+				for _,i in ipairs(allowed_non_solid_nodes_ceiling) do
+					if nn == i then
+						return true
+					end
+				end
+				for _,j in ipairs(allowed_non_solid_groups_ceiling) do
+					if def.groups[j] then
+						return true
+					end
+				end
+				return false
+			end
+		else --assuming wdir == 1
+			if def.groups.solid or def.groups.opaque then
+				return true
+			else
+				for _,i in ipairs(allowed_non_solid_nodes_floor) do
+					if nn == i then
+						return true
+					end
+				end
+				for _,j in ipairs(allowed_non_solid_groups_floor) do
+					if def.groups[j] then
+						return true
+					end
+				end
+				return false
+			end
+		end
+	end
+end
+
+>>>>>>> mcl2/master
 function mcl_lanterns.register_lantern(name, def)
 	local itemstring_floor = "mcl_lanterns:"..name.."_floor"
 	local itemstring_ceiling = "mcl_lanterns:"..name.."_ceiling"
@@ -61,9 +144,21 @@ function mcl_lanterns.register_lantern(name, def)
 
 			local under = pointed_thing.under
 			local above = pointed_thing.above
+<<<<<<< HEAD
 
 			local wdir = minetest.dir_to_wallmounted(vector.subtract(under, above))
 			local fakestack = itemstack
+=======
+			local node = minetest.get_node(under)
+
+			local wdir = minetest.dir_to_wallmounted(vector.subtract(under, above))
+			local fakestack = itemstack
+
+			if check_placement(node, wdir) == false then
+				return itemstack
+			end
+
+>>>>>>> mcl2/master
 			if wdir == 0 then
 				fakestack:set_name(itemstring_ceiling)
 			elseif wdir == 1 then

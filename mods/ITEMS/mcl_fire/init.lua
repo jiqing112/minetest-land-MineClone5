@@ -24,6 +24,7 @@ local get_connected_players = minetest.get_connected_players
 local vector = vector
 local math = math
 
+<<<<<<< HEAD
 -- inverse pyramid pattern above lava source, floor 1 of 2:
 local lava_fire=
 {
@@ -45,7 +46,34 @@ local adjacents =
 	{ x = 0, y = 1, z = 0},
 	{ x = 0, y = 0, z =-1},
 	{ x = 0, y = 0, z = 1}
+=======
+local adjacents = {
+	{ x =-1, y = 0, z = 0 },
+	{ x = 1, y = 0, z = 0 },
+	{ x = 0, y = 1, z = 0 },
+	{ x = 0, y =-1, z = 0 },
+	{ x = 0, y = 0, z =-1 },
+	{ x = 0, y = 0, z = 1 },
+>>>>>>> mcl2/master
 }
+
+local function shuffle_table(t)
+	for i = #t, 1, -1 do
+		local r = math.random(i)
+		t[i], t[r] = t[r], t[i]
+	end
+end
+shuffle_table(adjacents)
+
+local function has_flammable(pos)
+	for k,v in pairs(adjacents) do
+		local p=vector.add(pos,v)
+		local n=minetest.get_node_or_nil(p)
+		if n and minetest.get_item_group(n.name, "flammable") ~= 0 then
+			return p
+		end
+	end
+end
 
 local smoke_pdef = {
 	amount = 0.009,
@@ -86,10 +114,13 @@ else
 	eternal_fire_help = S("Eternal fire is a damaging block. Eternal fire can be extinguished by punches and nearby water blocks. Other than (normal) fire, eternal fire does not get extinguished on its own and also continues to burn under rain. Punching eternal fire is safe, but it hurts if you stand inside.")
 end
 
+<<<<<<< HEAD
 local function fire_timer(pos)
 	minetest.get_node_timer(pos):start(math.random(15, 45))
 end
 
+=======
+>>>>>>> mcl2/master
 local function spawn_fire(pos, age)
 	set_node(pos, {name="mcl_fire:fire", param2 = age})
 	minetest.check_single_for_falling({x=pos.x, y=pos.y+1, z=pos.z})
@@ -141,6 +172,7 @@ minetest.register_node("mcl_fire:fire", {
 			minetest.sound_play("fire_extinguish_flame", {pos = pos, gain = 0.25, max_hear_distance = 16}, true)
 		end
 	end,
+<<<<<<< HEAD
 	on_timer = function(pos)
 		local p=has_flammable(pos)
 		if not p or minetest.get_item_group(minetest.get_node(p).name, "flammable") == -1 then
@@ -149,6 +181,8 @@ minetest.register_node("mcl_fire:fire", {
 		end
 		return true --restart timer
 	end,
+=======
+>>>>>>> mcl2/master
 	drop = "",
 	sounds = {},
 	-- Turn into eternal fire on special blocks, light Nether portal (if possible), start burning timer
@@ -165,7 +199,6 @@ minetest.register_node("mcl_fire:fire", {
 			mcl_portals.light_nether_portal(pos)
 		end
 
-		fire_timer(pos)
 		mcl_particles.spawn_smoke(pos, "fire", smoke_pdef)
 	end,
 	on_destruct = function(pos)
@@ -203,7 +236,11 @@ minetest.register_node("mcl_fire:eternal_fire", {
 			minetest.sound_play("fire_extinguish_flame", {pos = pos, gain = 0.25, max_hear_distance = 16}, true)
 		end
 	end,
+<<<<<<< HEAD
 	-- light Nether portal (if possible)
+=======
+	-- Start burning timer and light Nether portal (if possible)
+>>>>>>> mcl2/master
 	on_construct = function(pos)
 		if has_mcl_portals then --Calling directly minetest.get_modpath consumes 4x more compute time
 			mcl_portals.light_nether_portal(pos)
@@ -328,6 +365,25 @@ if flame_sound then
 	end)
 end
 
+-- [...]a fire that is not adjacent to any flammable block does not spread, even to another flammable block within the normal range.
+-- https://minecraft.fandom.com/wiki/Fire#Spread
+
+local function check_aircube(p1,p2)
+	local nds=minetest.find_nodes_in_area(p1,p2,{"air"})
+	shuffle_table(nds)
+	for k,v in pairs(nds) do
+		if has_flammable(v) then return v end
+	end
+end
+
+-- [...] a fire block can turn any air block that is adjacent to a flammable block into a fire block. This can happen at a distance of up to one block downward, one block sideways (including diagonals), and four blocks upward of the original fire block (not the block the fire is on/next to).
+local function get_ignitable(pos)
+	return check_aircube(vector.add(pos,vector.new(-1,-1,-1)),vector.add(pos,vector.new(1,4,1)))
+end
+-- Fire spreads from a still lava block similarly: any air block one above and up to one block sideways (including diagonals) or two above and two blocks sideways (including diagonals) that is adjacent to a flammable block may be turned into a fire block.
+local function get_ignitable_by_lava(pos)
+	return check_aircube(vector.add(pos,vector.new(-1,1,-1)),vector.add(pos,vector.new(1,1,1))) or check_aircube(vector.add(pos,vector.new(-2,2,-2)),vector.add(pos,vector.new(2,2,2))) or nil
+end
 
 --
 -- ABMs
@@ -343,12 +399,13 @@ minetest.register_abm({
 	chance = 1,
 	catch_up = false,
 	action = function(pos, node, active_object_count, active_object_count_wider)
-		remove_node(pos)
+		minetest.remove_node(pos)
 		minetest.sound_play("fire_extinguish_flame",
 			{pos = pos, max_hear_distance = 16, gain = 0.15}, true)
 	end,
 })
 
+<<<<<<< HEAD
 --- Fire spread logic
 
 -- A fire that is not adjacent to any flammable block does not spread, even to another flammable block within the normal range.
@@ -381,6 +438,8 @@ local function add_fire_particle(pos,f)
 	})
 end
 
+=======
+>>>>>>> mcl2/master
 -- Enable the following ABMs according to 'enable fire' setting
 if not fire_enabled then
 
@@ -392,11 +451,15 @@ if not fire_enabled then
 		interval = 10,
 		chance = 10,
 		catch_up = false,
-		action = remove_node,
+		action = minetest.remove_node,
 	})
 
 else -- Fire enabled
 
+<<<<<<< HEAD
+=======
+	-- Fire Spread
+>>>>>>> mcl2/master
 	minetest.register_abm({
 		label = "Ignite flame",
 		nodenames ={"mcl_fire:fire","mcl_fire:eternal_fire"},
@@ -406,18 +469,29 @@ else -- Fire enabled
 		action = function(pos)
 			local p = get_ignitable(pos)
 			if p then
+<<<<<<< HEAD
 				add_fire_particle(p,pos)
 				spawn_fire(p)
 				shuffle_adjacents()
+=======
+				spawn_fire(p)
+				shuffle_table(adjacents)
+>>>>>>> mcl2/master
 			end
 		end
 	})
 
+<<<<<<< HEAD
 
 	-- Set fire to air nodes
 	minetest.register_abm({
 		label = "Ignite fire by lava",
 		nodenames = {"group:lava"},
+=======
+	--lava fire spread
+	minetest.register_abm({
+		label = "Ignite fire by lava",
+>>>>>>> mcl2/master
 		nodenames = {"mcl_core:lava_source","mcl_nether:nether_lava_source"},
 		neighbors = {"air","group:flammable"},
 		interval = 7,
@@ -426,12 +500,16 @@ else -- Fire enabled
 		action = function(pos)
 			local p=get_ignitable_by_lava(pos)
 			if p then
+<<<<<<< HEAD
 				add_fire_particle(p,pos)
+=======
+>>>>>>> mcl2/master
 				spawn_fire(p)
 			end
 		end,
 	})
 
+<<<<<<< HEAD
 	-- Remove flammable nodes around basic flame
 	minetest.register_abm({
 		label = "Remove flammable nodes",
@@ -457,10 +535,53 @@ else -- Fire enabled
 				spawn_fire(p)
 				fire_timer(p)
 				minetest.check_for_falling(p)
+=======
+	minetest.register_abm({
+		label = "Remove fires",
+		nodenames = {"mcl_fire:fire"},
+		interval = 7,
+		chance = 3,
+		catch_up = false,
+		action = function(pos)
+			local p=has_flammable(pos)
+			if p then
+				local n=minetest.get_node_or_nil(p)
+				if n and minetest.get_item_group(n.name, "flammable") < 1 then
+					minetest.remove_node(pos)
+				end
+			else
+				minetest.remove_node(pos)
+>>>>>>> mcl2/master
 			end
 		end
 	})
 
+	-- Remove flammable nodes around basic flame
+	minetest.register_abm({
+		label = "Remove flammable nodes",
+		nodenames = {"mcl_fire:fire","mcl_fire:eternal_fire"},
+		neighbors = {"group:flammable"},
+		interval = 5,
+		chance = 18,
+		catch_up = false,
+		action = function(pos)
+			local p = has_flammable(pos)
+			if not p then
+				return
+			end
+
+			local nn = minetest.get_node(p).name
+			local def = minetest.registered_nodes[nn]
+			local fgroup = minetest.get_item_group(nn, "flammable")
+
+			if def and def._on_burn then
+				def._on_burn(p)
+			elseif fgroup ~= -1 then
+				spawn_fire(p)
+				minetest.check_for_falling(p)
+			end
+		end
+	})
 end
 
 -- Set pointed_thing on (normal) fire.

@@ -17,6 +17,7 @@ function mcl_smithing_table.upgrade_item(itemstack)
 
 	local itemname = itemstack:get_name()
 
+<<<<<<< HEAD
 	local upgrade_item = def._mcl_upgrade_item
 
 	if upgrade_item and mcl_enchanting.is_enchanted(itemname) then
@@ -24,6 +25,9 @@ function mcl_smithing_table.upgrade_item(itemstack)
 	end
 
 	upgrade_item = upgrade_item or itemname:gsub("diamond", "netherite")
+=======
+	local upgrade_item = def._mcl_upgrade_item or itemname:gsub("diamond", "netherite")
+>>>>>>> mcl2/master
 
 	if upgrade_item == itemname then
 		return
@@ -32,6 +36,10 @@ function mcl_smithing_table.upgrade_item(itemstack)
 	itemstack:set_name(upgrade_item)
 
 	-- Reload the ToolTips of the tool
+<<<<<<< HEAD
+=======
+
+>>>>>>> mcl2/master
 	tt.reload_itemstack_description(itemstack)
 
 	-- Only return itemstack if upgrade was successfull
@@ -42,6 +50,7 @@ end
 -- ToDo: Make better formspec
 
 local formspec = "size[9,9]" ..
+<<<<<<< HEAD
 		   "label[0,4.0;" .. minetest.formspec_escape(minetest.colorize(mcl_colors.DARK_GRAY, S("Inventory"))) .. "]" ..
 		   "list[current_player;main;0,4.5;9,3;9]" ..
 		   mcl_formspec.get_itemslot_bg(0,4.5,9,3) ..
@@ -58,6 +67,25 @@ local formspec = "size[9,9]" ..
 		   "listring[current_player;main]"..
 		   "listring[context;input]"..
 		   "listring[current_player;main]"
+=======
+		"background[-0.19,-0.25;9.41,9.49;mcl_smithing_table_inventory.png]"..
+		"label[0,4.0;" .. minetest.formspec_escape(minetest.colorize(mcl_colors.DARK_GRAY, S("Inventory"))) .. "]" ..
+		"list[current_player;main;0,4.5;9,3;9]" ..
+		mcl_formspec.get_itemslot_bg(0,4.5,9,3) ..
+		"list[current_player;main;0,7.74;9,1;]" ..
+		mcl_formspec.get_itemslot_bg(0,7.74,9,1) ..
+		"list[context;diamond_item;1,2.5;1,1;]" ..
+		mcl_formspec.get_itemslot_bg(1,2.5,1,1) ..
+		"list[context;netherite;4,2.5;1,1;]" ..
+		mcl_formspec.get_itemslot_bg(4,2.5,1,1) ..
+		"list[context;upgraded_item;8,2.5;1,1;]" ..
+		mcl_formspec.get_itemslot_bg(8,2.5,1,1) ..
+		"label[3,0.1;" .. minetest.formspec_escape(minetest.colorize(mcl_colors.DARK_GRAY, S("Upgrade Gear"))) .. "]" ..
+		"listring[context;output]"..
+		"listring[current_player;main]"..
+		"listring[context;input]"..
+		"listring[current_player;main]"
+>>>>>>> mcl2/master
 
 local function reset_upgraded_item(pos)
 	local inv = minetest.get_meta(pos):get_inventory()
@@ -78,13 +106,23 @@ minetest.register_node("mcl_smithing_table:table", {
 	groups = {pickaxey = 2, deco_block = 1},
 
 	tiles = {
+<<<<<<< HEAD
 		"mcl_smithing_table_top.png", "mcl_smithing_table_bottom.png", "mcl_smithing_table_side.png",
 		"mcl_smithing_table_side.png", "mcl_smithing_table_side.png", "mcl_smithing_table_front.png"
+=======
+		"mcl_smithing_table_top.png",
+		"mcl_smithing_table_bottom.png",
+		"mcl_smithing_table_side.png",
+		"mcl_smithing_table_side.png",
+		"mcl_smithing_table_side.png",
+		"mcl_smithing_table_front.png",
+>>>>>>> mcl2/master
 	},
 
 	sounds = mcl_sounds.node_sound_metal_defaults(),
 
 	on_construct = function(pos)
+<<<<<<< HEAD
 			local meta = minetest.get_meta(pos)
 			meta:set_string("formspec", formspec)
 
@@ -94,6 +132,17 @@ minetest.register_node("mcl_smithing_table:table", {
 			inv:set_size("netherite", 1)
 			inv:set_size("upgraded_item", 1)
   end,
+=======
+		local meta = minetest.get_meta(pos)
+		meta:set_string("formspec", formspec)
+
+		local inv = meta:get_inventory()
+
+		inv:set_size("diamond_item", 1)
+		inv:set_size("netherite", 1)
+		inv:set_size("upgraded_item", 1)
+	end,
+>>>>>>> mcl2/master
 
 	allow_metadata_inventory_put = function(pos, listname, index, stack, player)
 		if listname == "diamond_item" and mcl_smithing_table.upgrade_item(stack) or listname == "netherite" and stack:get_name() == "mcl_nether:netherite_ingot" then

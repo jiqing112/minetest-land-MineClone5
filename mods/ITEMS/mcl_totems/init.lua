@@ -1,35 +1,51 @@
+local S = minetest.get_translator(minetest.get_current_modname())
+
 local hud_totem = {}
 
 minetest.register_on_leaveplayer(function(player)
 	hud_totem[player] = nil
 end)
 
+minetest.register_craftitem("mcl_totems:totem", {
+	description = S("Totem of Undying"),
+	_tt_help = minetest.colorize(mcl_colors.GREEN, S("Protects you from death while wielding it")),
+	_doc_items_longdesc = S("A totem of undying is a rare artifact which may safe you from certain death."),
+	_doc_items_usagehelp = S("The totem only works while you hold it in your hand. If you receive fatal damage, you are saved from death and you get a second chance with 1 HP. The totem is destroyed in the process, however."),
+	inventory_image = "mcl_totems_totem.png",
+	wield_image = "mcl_totems_totem.png",
+	stack_max = 1,
+	groups = {combat_item = 1, offhand_item = 1},
+})
+minetest.register_alias("mobs_mc:totem", "mcl_totems:totem")
+
 local particle_colors = {"98BF22", "C49E09", "337D0B", "B0B021", "1E9200"} -- TODO: real MC colors
 
 -- Save the player from death when holding totem of undying in hand
 mcl_damage.register_modifier(function(obj, damage, reason)
-	if obj:is_player() then
+	if obj:is_player() and not reason.bypasses_totem then
 		local hp = obj:get_hp()
 		if hp - damage <= 0 then
 			local wield = obj:get_wielded_item()
 			local in_offhand = false
+<<<<<<< HEAD
 			if not (wield:get_name() == "mobs_mc:totem") then
+=======
+			if not (wield:get_name() == "mcl_totems:totem") then
+>>>>>>> mcl2/master
 				local inv = obj:get_inventory()
 				if inv then
 					wield = obj:get_inventory():get_stack("offhand", 1)
 					in_offhand = true
 				end
 			end
+<<<<<<< HEAD
 			if wield:get_name() == "mobs_mc:totem" then
+=======
+			if wield:get_name() == "mcl_totems:totem" then
+>>>>>>> mcl2/master
 				local ppos = obj:get_pos()
 				local pnname = minetest.get_node(ppos).name
-				-- Some exceptions when _not_ to save the player
-				for n = 1, #mobs_mc.misc.totem_fail_nodes do
-					if pnname == mobs_mc.misc.totem_fail_nodes[n] then
-						return
-					end
-				end
-				-- Reset breath as well
+
 				if obj:get_breath() < 11 then
 					obj:set_breath(10)
 				end
@@ -44,10 +60,14 @@ mcl_damage.register_modifier(function(obj, damage, reason)
 					end
 				end
 				awards.unlock(obj:get_player_name(), "mcl:postMortal")
+<<<<<<< HEAD
 
+=======
+				
+>>>>>>> mcl2/master
 				-- Effects
 				minetest.sound_play({name = "mcl_totems_totem", gain = 1}, {pos=ppos, max_hear_distance = 16}, true)
-				
+
 				for i = 1, 4 do
 					for c = 1, #particle_colors do
 						minetest.add_particlespawner({

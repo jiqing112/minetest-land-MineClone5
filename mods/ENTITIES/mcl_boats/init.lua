@@ -127,9 +127,11 @@ end
 
 local boat = {
 	physical = true,
+	pointable = true,
 	-- Warning: Do not change the position of the collisionbox top surface,
 	-- lowering it causes the boat to fall through the world if underwater
 	collisionbox = {-0.5, -0.35, -0.5, 0.5, 0.3, 0.5},
+	selectionbox = {-0.7, -0.35, -0.7, 0.7, 0.3, 0.7},
 	visual = "mesh",
 	mesh = "mcl_boats_boat.b3d",
 	textures = {"mcl_boats_texture_oak_boat.png", "mcl_boats_texture_oak_boat.png", "mcl_boats_texture_oak_boat.png", "mcl_boats_texture_oak_boat.png", "mcl_boats_texture_oak_boat.png"},
@@ -336,7 +338,7 @@ function boat.on_step(self, dtime, moveresult)
 
 		for _, obj in pairs(minetest.get_objects_inside_radius(self.object:get_pos(), 1.3)) do
 			local entity = obj:get_luaentity()
-			if entity and entity._cmi_is_mob then
+			if entity and entity.is_mob then
 				attach_object(self, obj)
 				break
 			end

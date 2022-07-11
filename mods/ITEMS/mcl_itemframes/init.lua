@@ -61,6 +61,7 @@ for v=1, #vari do
 	    end,
     })
 
+<<<<<<< HEAD
     minetest.register_entity(var[2], {
 	    initial_properties = {
 	    	visual = "upright_sprite",
@@ -81,6 +82,28 @@ for v=1, #vari do
 		    return self.id
 	    end,
     })
+=======
+minetest.register_entity("mcl_itemframes:map", {
+	initial_properties = {
+		visual = "upright_sprite",
+		visual_size = {x = 1, y = 1},
+		pointable = false,
+		physical = false,
+		collide_with_objects = false,
+		textures = {"blank.png"},
+	},
+	on_activate = function(self, staticdata)
+		self.id = staticdata
+		mcl_maps.load_map(self.id, function(texture)
+			-- will not crash even if self.object is invalid by now
+			self.object:set_properties({textures = {texture}})
+		end)
+	end,
+	get_staticdata = function(self)
+		return self.id
+	end,
+})
+>>>>>>> mcl2/master
 
 
     local facedir = {}
@@ -208,6 +231,7 @@ for v=1, #vari do
     			end
     		end
 
+<<<<<<< HEAD
     		return minetest.item_place(itemstack, placer, pointed_thing, minetest.dir_to_facedir(vector.direction(pointed_thing.above, pointed_thing.under)))
     	end,
     	on_construct = function(pos)
@@ -312,6 +336,50 @@ for v=1, #vari do
     		end
     	end,
     })
+=======
+		return minetest.item_place(itemstack, placer, pointed_thing, minetest.dir_to_facedir(vector.direction(pointed_thing.above, pointed_thing.under)))
+	end,
+	on_construct = function(pos)
+		local meta = minetest.get_meta(pos)
+		local inv = meta:get_inventory()
+		inv:set_size("main", 1)
+	end,
+	on_rightclick = function(pos, node, clicker, itemstack)
+		if not itemstack then
+			return
+		end
+		local pname = clicker:get_player_name()
+		if minetest.is_protected(pos, pname) then
+			minetest.record_protection_violation(pos, pname)
+			return
+		end
+		local meta = minetest.get_meta(pos)
+		drop_item(pos, node, meta, clicker)
+		local inv = meta:get_inventory()
+		if itemstack:is_empty() then
+			remove_item_entity(pos, node)
+			meta:set_string("infotext", "")
+			inv:set_stack("main", 1, "")
+			return itemstack
+		end
+		local put_itemstack = ItemStack(itemstack)
+		put_itemstack:set_count(1)
+		local itemname = put_itemstack:get_name()
+		if minetest.get_item_group(itemname, "compass") > 0 then
+			put_itemstack:set_name(mcl_compass.get_compass_itemname(pos, minetest.dir_to_yaw(minetest.facedir_to_dir(node.param2)), put_itemstack))
+		end
+		if minetest.get_item_group(itemname, "clock") > 0 then
+			minetest.get_node_timer(pos):start(1.0)
+		end
+		inv:set_stack("main", 1, put_itemstack)
+		update_item_entity(pos, node)
+		-- Add node infotext when item has been named
+		local imeta = itemstack:get_meta()
+		local iname = imeta:get_string("name")
+		if iname then
+			meta:set_string("infotext", iname)
+		end
+>>>>>>> mcl2/master
 
     minetest.register_lbm({
     	label = "Update legacy item frames",

@@ -156,7 +156,24 @@ function mcl_experience.throw_xp(pos, total_xp)
 	end
 end
 
-local function init_hudbars(player)
+function mcl_experience.remove_hud(player)
+	if hud_bars[player] then
+		player:hud_remove(hud_bars[player])
+		hud_bars[player] = nil
+	end
+	if hud_levels[player] then
+		player:hud_remove(hud_levels[player])
+		hud_levels[player] = nil
+	end
+end
+
+function mcl_experience.setup_hud(player)
+	if hud_bars[player] and hud_levels[player] then return end
+	mcl_experience.remove_hud(player)
+	caches[player] = {
+		last_time = get_time(),
+	}
+
 	if not minetest.is_creative_enabled(player:get_player_name()) then
 		hud_bars[player] = player:hud_add({
 			hud_elem_type = "image",
@@ -178,7 +195,6 @@ local function init_hudbars(player)
 end
 
 function mcl_experience.update(player)
-	if not mcl_util or not mcl_util.is_player(player) then return end
 	local xp = mcl_experience.get_xp(player)
 	local cache = caches[player]
 
@@ -186,7 +202,7 @@ function mcl_experience.update(player)
 
 	if not minetest.is_creative_enabled(player:get_player_name()) then
 		if not hud_bars[player] then
-			init_hudbars(player)
+			mcl_experience.setup_hud(player)
 		end
 		player:hud_change(hud_bars[player], "text", "mcl_experience_bar_background.png^[lowpart:"
 			.. math.floor(math.floor(xp_to_bar(xp, cache.level) * 18) / 18 * 100)
@@ -208,10 +224,7 @@ end
 -- callbacks
 
 minetest.register_on_joinplayer(function(player)
-	caches[player] = {
-		last_time = get_time(),
-	}
-	init_hudbars(player)
+	mcl_experience.setup_hud(player)
 	mcl_experience.update(player)
 end)
 

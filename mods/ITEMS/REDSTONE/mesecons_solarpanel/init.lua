@@ -1,5 +1,71 @@
 local S = minetest.get_translator(minetest.get_current_modname())
 
+local function path_to_sunlight_exists(position, light_level)
+	local neighbours = {
+		{ x = 0, y = 0, z =-1 },
+		{ x = 0, y = 0, z = 1 },
+		{ x = 0, y =-1, z = 0 },
+		{ x = 0, y = 1, z = 0 },
+		{ x =-1, y = 0, z = 0 },
+		{ x = 1, y = 0, z = 0 },
+	}
+	for i=1, #neighbours do
+		local offset = neighbours[i]
+		local position_new = vector.add(
+			position,
+			offset
+		)
+		local light_level_new = minetest.get_node_light(
+			position_new,
+			nil
+		)
+		if 15 == light_level_new then
+			-- found the sunlight
+			return true
+		elseif light_level_new > light_level then
+			-- search where light is brighter
+			if path_to_sunlight_exists(
+				position_new,
+				light_level_new
+			) then
+				return true
+			end
+		end
+	end
+end
+
+local sunlight_visible
+if nil ~= minetest.get_natural_light then
+	-- Minetest 5.4.0+ can measure the daylight level at a position
+	sunlight_visible = function(position)
+		light_level = minetest.get_natural_light(
+			position,
+			nil
+		)
+		if light_level >= 12 then
+			return true
+		end
+	end
+else
+	-- Minetest 5.3.0 or less can only measure the light level
+	sunlight_visible = function(position)
+		local time = minetest.get_timeofday() * 24000
+		-- only check light level during day
+		if time > 6000 and time < 18000 then
+			light_level = minetest.get_node_light(
+				position,
+				nil
+			)
+			if light_level >= 12 then
+				return path_to_sunlight_exists(
+					position,
+					12
+				)
+			end
+		end
+	end
+end
+
 local boxes = { -8/16, -8/16, -8/16,  8/16, -2/16, 8/16 }
 
 -- Daylight Sensor
@@ -95,10 +161,7 @@ minetest.register_abm({
 	interval = 1,
 	chance = 1,
 	action = function(pos, node, active_object_count, active_object_count_wider)
-		local light = minetest.get_node_light(pos, nil)
-		local time = minetest.get_us_time()
-
-		if light >= 14 and time > 6000 then
+		if sunlight_visible(pos) then
 			minetest.set_node(pos, {name="mesecons_solarpanel:solar_panel_on", param2=node.param2})
 			mesecon.receptor_on(pos, mesecon.rules.pplate)
 		end
@@ -111,10 +174,7 @@ minetest.register_abm({
 	interval = 1,
 	chance = 1,
 	action = function(pos, node, active_object_count, active_object_count_wider)
-		local light = minetest.get_node_light(pos, nil)
-		local time = minetest.get_us_time()
-
-		if light < 14 and time > 18000 then
+		if not sunlight_visible(pos) then
 			minetest.set_node(pos, {name="mesecons_solarpanel:solar_panel_off", param2=node.param2})
 			mesecon.receptor_off(pos, mesecon.rules.pplate)
 		end
@@ -204,10 +264,7 @@ minetest.register_abm({
 	interval = 1,
 	chance = 1,
 	action = function(pos, node, active_object_count, active_object_count_wider)
-		local light = minetest.get_node_light(pos, nil)
-		local time = minetest.get_us_time()
-
-		if light < 14 and time > 18000 then
+		if not sunlight_visible(pos) then
 			minetest.set_node(pos, {name="mesecons_solarpanel:solar_panel_inverted_on", param2=node.param2})
 			mesecon.receptor_on(pos, mesecon.rules.pplate)
 		end
@@ -220,10 +277,7 @@ minetest.register_abm({
 	interval = 1,
 	chance = 1,
 	action = function(pos, node, active_object_count, active_object_count_wider)
-		local light = minetest.get_node_light(pos, nil)
-		local time = minetest.get_us_time()
-
-		if light >= 14 and time > 6000 then
+		if sunlight_visible(pos) then
 			minetest.set_node(pos, {name="mesecons_solarpanel:solar_panel_inverted_off", param2=node.param2})
 			mesecon.receptor_off(pos, mesecon.rules.pplate)
 		end

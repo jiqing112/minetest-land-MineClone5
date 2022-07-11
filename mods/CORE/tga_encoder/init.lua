@@ -557,35 +557,7 @@ function image:encode(properties)
 	self:encode_footer() -- footer
 end
 
-function image:save(filename, properties)
-	local properties = properties or {}
-	properties.colormap = properties.colormap or {}
-	properties.compression = properties.compression or "RAW"
-
-	self.pixel_depth = #self.pixels[1][1] * 8
-
-	local color_format_defaults_by_pixel_depth = {
-		[8] = "Y8",
-		[24] = "B8G8R8",
-		[32] = "B8G8R8A8",
-	}
-	if nil == properties.color_format then
-		if 0 ~= #properties.colormap then
-			properties.color_format =
-				color_format_defaults_by_pixel_depth[
-				#properties.colormap[1] * 8
-				]
-		else
-			properties.color_format =
-				color_format_defaults_by_pixel_depth[
-					self.pixel_depth
-				]
-		end
-	end
-	assert( nil ~= properties.color_format )
-
-	self:encode(properties)
-
+function image:save(filename)
 	local f = assert(io.open(filename, "wb"))
 	f:write(self.data)
 	f:close()

@@ -209,6 +209,57 @@ local function get_target(p)
 	end
 end
 
+<<<<<<< HEAD
+=======
+-- Destroy a nether portal.  Connected portal nodes are searched and removed
+-- using 'bulk_set_node'.  This function is called from 'after_destruct' of
+-- nether portal nodes.  The flag 'destroying_portal' is used to avoid this
+-- function being called recursively through callbacks in 'bulk_set_node'.
+local destroying_portal = false
+local function destroy_nether_portal(pos, node)
+	if destroying_portal then
+		return
+	end
+	destroying_portal = true
+
+	local orientation = node.param2
+	local checked_tab = { [minetest.hash_node_position(pos)] = true }
+	local nodes = { pos }
+
+	local function check_remove(pos)
+		local h = minetest.hash_node_position(pos)
+		if checked_tab[h] then
+			return
+		end
+
+		local node = minetest.get_node(pos)
+		if node and node.name == PORTAL and (orientation == nil or node.param2 == orientation) then
+			table.insert(nodes, pos)
+			checked_tab[h] = true
+		end
+	end
+
+	local i = 1
+	while i <= #nodes do
+		pos = nodes[i]
+		if orientation == 0 then
+			check_remove({x = pos.x - 1, y = pos.y, z = pos.z})
+			check_remove({x = pos.x + 1, y = pos.y, z = pos.z})
+		else
+			check_remove({x = pos.x, y = pos.y, z = pos.z - 1})
+			check_remove({x = pos.x, y = pos.y, z = pos.z + 1})
+		end
+		check_remove({x = pos.x, y = pos.y - 1, z = pos.z})
+		check_remove({x = pos.x, y = pos.y + 1, z = pos.z})
+		remove_exit(pos)
+		i = i + 1
+	end
+
+	minetest.bulk_set_node(nodes, { name = "air" })
+	destroying_portal = false
+end
+
+>>>>>>> mcl2/master
 local on_rotate
 if minetest.get_modpath("screwdriver") then
 	on_rotate = screwdriver.disallow
@@ -387,6 +438,9 @@ local function finalize_teleport(obj, exit)
 		mcl_worlds.dimension_change(obj, dim)
 		minetest.sound_play("mcl_portals_teleport", {pos=exit, gain=0.5, max_hear_distance = 16}, true)
 		log("action", "[mcl_portals] player "..name.." teleported to Nether portal at "..pos_to_string(exit)..".")
+		if dim == "nether" then
+			awards.unlock(obj:get_player_name(), "mcl:theNether")
+		end
 	else
 		log("action", "[mcl_portals] entity teleported to Nether portal at "..pos_to_string(exit)..".")
 	end
@@ -831,6 +885,26 @@ local usagehelp = S("To open a Nether portal, place an upright frame of obsidian
 minetest.override_item(OBSIDIAN, {
 	_doc_items_longdesc = longdesc,
 	_doc_items_usagehelp = usagehelp,
+<<<<<<< HEAD
+=======
+	after_destruct = function(pos, node)
+		local function check_remove(pos, orientation)
+			local node = get_node(pos)
+			if node and node.name == PORTAL then
+				minetest.remove_node(pos)
+			end
+		end
+
+		-- check each of 6 sides of it and destroy every portal
+		check_remove({x = pos.x - 1, y = pos.y, z = pos.z})
+		check_remove({x = pos.x + 1, y = pos.y, z = pos.z})
+		check_remove({x = pos.x, y = pos.y, z = pos.z - 1})
+		check_remove({x = pos.x, y = pos.y, z = pos.z + 1})
+		check_remove({x = pos.x, y = pos.y - 1, z = pos.z})
+		check_remove({x = pos.x, y = pos.y + 1, z = pos.z})
+	end,
+
+>>>>>>> mcl2/master
 	_on_ignite = function(user, pointed_thing)
 		local x, y, z = pointed_thing.under.x, pointed_thing.under.y, pointed_thing.under.z
 		-- Check empty spaces around obsidian and light all frames found:

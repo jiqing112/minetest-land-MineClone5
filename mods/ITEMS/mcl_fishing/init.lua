@@ -111,6 +111,7 @@ local fish = function(itemstack, player, pointed_thing)
 										{ itemstring = "mcl_mobs:nametag", },
 										{ itemstring = "mcl_mobitems:saddle", },
 										{ itemstring = "mcl_flowers:waterlily", },
+										{ itemstring = "mcl_mobitems:nautilus_shell", },
 									},
 									stacks_min = 1,
 									stacks_max = 1,
@@ -125,6 +126,9 @@ local fish = function(itemstack, player, pointed_thing)
 							local inv = player:get_inventory()
 							if inv:room_for_item("main", item) then
 								inv:add_item("main", item)
+								if item:get_name() == "mcl_mobitems:leather" then
+									awards.unlock(player:get_player_name(), "mcl:killCow")
+								end
 							else
 								minetest.add_item(pos, item)
 							end

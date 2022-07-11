@@ -14,10 +14,11 @@ end
 
 function mcl_enchanting.unload_enchantments(itemstack)
 	local itemdef = itemstack:get_definition()
-	if itemdef.tool_capabilities then
-		itemstack:get_meta():set_tool_capabilities(nil)
-	end
 	local meta = itemstack:get_meta()
+	if itemdef.tool_capabilities then
+		meta:set_tool_capabilities(nil)
+		meta:set_string("groupcaps_hash", "")
+	end
 	if meta:get_string("name") == "" then
 		meta:set_string("description", "")
 		meta:set_string("groupcaps_hash", "")
@@ -33,6 +34,7 @@ function mcl_enchanting.load_enchantments(itemstack, enchantments)
 				enchantment_def.on_enchant(itemstack, level)
 			end
 		end
+		mcl_enchanting.update_groupcaps(itemstack)
 	end
 	tt.reload_itemstack_description(itemstack)
 end
@@ -72,8 +74,12 @@ function mcl_enchanting.is_enchanted(itemname)
 	return minetest.get_item_group(itemname, "enchanted") > 0
 end
 
+function mcl_enchanting.not_enchantable_on_enchanting_table(itemname)
+	return mcl_enchanting.get_enchantability(itemname) == -1
+end
+
 function mcl_enchanting.is_enchantable(itemname)
-	return mcl_enchanting.get_enchantability(itemname) > 0
+	return mcl_enchanting.get_enchantability(itemname) > 0 or mcl_enchanting.not_enchantable_on_enchanting_table(itemname)
 end
 
 function mcl_enchanting.can_enchant_freshly(itemname)
@@ -246,7 +252,7 @@ local function get_after_use_callback(itemdef)
 	-- If the tool does not have after_use, add wear to the tool as if no
 	-- after_use was registered.
 	return function(itemstack, user, node, digparams)
-		if not minetest.is_creative_enabled(user) then
+		if not minetest.is_creative_enabled(user:get_player_name()) then
 			itemstack:add_wear(digparams.wear)
 		end
 
@@ -271,11 +277,10 @@ function mcl_enchanting.initialize()
 			new_def.groups.not_in_craft_guide = 1
 			new_def.groups.enchanted = 1
 
-			if new_def._mcl_armor_texture and not type(new_def._mcl_armor_texture) == "function" then
-				new_def._mcl_armor_texture = new_def._mcl_armor_texture .. mcl_enchanting.overlay
-			end
-			if new_def._mcl_armor_preview and not type(new_def._mcl_armor_preview) == "function" then
-				new_def._mcl_armor_preview = new_def._mcl_armor_preview .. mcl_enchanting.overlay
+			if new_def._mcl_armor_texture then
+				if type(new_def._mcl_armor_texture) == "string" then
+					new_def._mcl_armor_texture = new_def._mcl_armor_texture .. mcl_enchanting.overlay
+				end
 			end
 
 			new_def._mcl_enchanting_enchanted_tool = new_name
@@ -326,7 +331,7 @@ end
 function mcl_enchanting.generate_random_enchantments(itemstack, enchantment_level, treasure, no_reduced_bonus_chance, ignore_already_enchanted, pr)
 	local itemname = itemstack:get_name()
 
-	if not mcl_enchanting.can_enchant_freshly(itemname) and not ignore_already_enchanted then
+	if (not mcl_enchanting.can_enchant_freshly(itemname) and not ignore_already_enchanted) or mcl_enchanting.not_enchantable_on_enchanting_table(itemname) then
 		return
 	end
 
@@ -452,10 +457,10 @@ function mcl_enchanting.generate_random_table_slots(itemstack, num_bookshelves)
 end
 
 function mcl_enchanting.get_table_slots(player, itemstack, num_bookshelves)
-	if not mcl_enchanting.can_enchant_freshly(itemstack:get_name()) then
+	local itemname = itemstack:get_name()
+	if (not mcl_enchanting.can_enchant_freshly(itemname)) or mcl_enchanting.not_enchantable_on_enchanting_table(itemname) then
 		return {false, false, false}
 	end
-	local itemname = itemstack:get_name()
 	local meta = player:get_meta()
 	local player_slots = minetest.deserialize(meta:get_string("mcl_enchanting:slots")) or {}
 	local player_bookshelves_slots = player_slots[num_bookshelves] or {}
@@ -571,6 +576,7 @@ function mcl_enchanting.handle_formspec_fields(player, formname, fields)
 		minetest.sound_play("mcl_enchanting_enchant", {to_player = name, gain = 5.0})
 		mcl_enchanting.reset_table_slots(player)
 		mcl_enchanting.show_enchanting_formspec(player)
+		awards.unlock(player:get_player_name(), "mcl:enchanter")
 	end
 end
 

@@ -261,6 +261,15 @@ function mcl_structures.place_schematic(def)
 		else
 			rotation = rotations[math.random(1,#rotations)]
 		end
+<<<<<<< HEAD
+=======
+		local p1 = {x=pos.x    , y=pos.y           , z=pos.z    }
+		local p2 = {x=pos.x+x-1, y=pos.y+s.size.y-1, z=pos.z+z-1}
+		minetest.log("verbose", "[mcl_structures] size=" ..minetest.pos_to_string(s.size) .. ", rotation=" .. tostring(rotation) .. ", emerge from "..minetest.pos_to_string(p1) .. " to " .. minetest.pos_to_string(p2))
+		local param = {pos=vector.new(pos), schematic=s, rotation=rotation, replacements=replacements, force_placement=force_placement, flags=flags, p1=p1, p2=p2, after_placement_callback = after_placement_callback, size=vector.new(s.size), pr=pr, callback_param=callback_param}
+		minetest.emerge_area(p1, p2, ecb_place, param)
+		return true
+>>>>>>> mcl2/master
 	end
 
 	if not emerge and not on_placed then
@@ -331,6 +340,7 @@ function mcl_structures.init_node_construct(pos)
 	end
 	return false
 end
+mcl_structures.init_node_construct = init_node_construct
 
 -- The call of Struct
 function mcl_structures.call_struct(pos, struct_style, rotation, pr, callback)
@@ -338,10 +348,15 @@ function mcl_structures.call_struct(pos, struct_style, rotation, pr, callback)
 	if not rotation then
 		rotation = "random"
 	end
+<<<<<<< HEAD
 	if struct_style == "boulder" then
 		return mcl_structures.generate_boulder(pos, rotation, pr)
 	elseif struct_style == "end_exit_portal" then
 		return mcl_structures.generate_end_exit_portal(pos, rotation, pr, callback)
+=======
+	if struct_style == "end_exit_portal" then
+		return mcl_structures.generate_end_exit_portal(pos, rotation)
+>>>>>>> mcl2/master
 	elseif struct_style == "end_exit_portal_open" then
 		return mcl_structures.generate_end_exit_portal_open(pos, rotation)
 	elseif struct_style == "end_gateway_portal" then
@@ -353,6 +368,7 @@ function mcl_structures.call_struct(pos, struct_style, rotation, pr, callback)
 	end
 end
 
+<<<<<<< HEAD
 function mcl_structures.generate_end_portal(pos, rotation, pr)
 	-- todo: proper facedir
 	local x0, y0, z0 = pos.x - 2, pos.y, pos.z - 2
@@ -385,6 +401,10 @@ function mcl_structures.generate_boulder(pos, rotation, pr)
 end
 
 function mcl_structures.generate_end_exit_portal(pos, rot, pr, callback)
+=======
+
+function mcl_structures.generate_end_exit_portal(pos, rot)
+>>>>>>> mcl2/master
 	local path = modpath.."/schematics/mcl_structures_end_exit_portal.mts"
 	return mcl_structures.place_schematic(pos, path, rot or "0", {["mcl_portals:portal_end"] = "air"}, true, nil, callback)
 end
@@ -406,8 +426,177 @@ function mcl_structures.from_16x16_to_chunk_inverted_chance(x)
 	return math.floor(x * 256 / chunk_square + 0.5)
 end
 
+<<<<<<< HEAD
 function mcl_structures.from_16x16_to_block_inverted_chance(x)
 	return math.floor(x * 256 / block_square + 0.5)
 end
 
 dofile(modpath .. "/structures.lua")
+=======
+local structure_data = {}
+
+--[[ Returns a table of structure of the specified type.
+Currently the only valid parameter is "stronghold".
+Format of return value:
+{
+	{ pos = <position>, generated=<true/false> }, -- first structure
+	{ pos = <position>, generated=<true/false> }, -- second structure
+	-- and so on
+}
+
+TODO: Implement this function for all other structure types as well.
+]]
+function mcl_structures.get_structure_data(structure_type)
+	if structure_data[structure_type] then
+		return table.copy(structure_data[structure_type])
+	else
+		return {}
+	end
+end
+
+-- Register a structures table for the given type. The table format is the same as for
+-- mcl_structures.get_structure_data.
+function mcl_structures.register_structure_data(structure_type, structures)
+	structure_data[structure_type] = structures
+end
+
+local function dir_to_rotation(dir)
+	local ax, az = math.abs(dir.x), math.abs(dir.z)
+	if ax > az then
+		if dir.x < 0 then
+			return "270"
+		end
+		return "90"
+	end
+	if dir.z < 0 then
+		return "180"
+	end
+	return "0"
+end
+
+dofile(modpath.."/api.lua")
+dofile(modpath.."/shipwrecks.lua")
+dofile(modpath.."/desert_temple.lua")
+dofile(modpath.."/jungle_temple.lua")
+dofile(modpath.."/ocean_ruins.lua")
+dofile(modpath.."/witch_hut.lua")
+dofile(modpath.."/igloo.lua")
+dofile(modpath.."/woodland_mansion.lua")
+dofile(modpath.."/geode.lua")
+
+
+
+mcl_structures.register_structure("desert_well",{
+	place_on = {"group:sand"},
+	fill_ratio = 0.01,
+	flags = "place_center_x, place_center_z",
+	not_near = { "desert_temple_new" },
+	solid_ground = true,
+	sidelen = 4,
+	chunk_probability = 600,
+	y_max = mcl_vars.mg_overworld_max,
+	y_min = 1,
+	y_offset = -2,
+	biomes = { "Desert" },
+	filenames = { modpath.."/schematics/mcl_structures_desert_well.mts" },
+})
+
+mcl_structures.register_structure("fossil",{
+	place_on = {"group:material_stone","group:sand"},
+	fill_ratio = 0.01,
+	flags = "place_center_x, place_center_z",
+	solid_ground = true,
+	sidelen = 13,
+	chunk_probability = 1000,
+	y_offset = function(pr) return ( pr:next(1,16) * -1 ) -16 end,
+	y_max = 15,
+	y_min = mcl_vars.mg_overworld_min + 35,
+	biomes = { "Desert" },
+	filenames = {
+		modpath.."/schematics/mcl_structures_fossil_skull_1.mts", -- 4×5×5
+		modpath.."/schematics/mcl_structures_fossil_skull_2.mts", -- 5×5×5
+		modpath.."/schematics/mcl_structures_fossil_skull_3.mts", -- 5×5×7
+		modpath.."/schematics/mcl_structures_fossil_skull_4.mts", -- 7×5×5
+		modpath.."/schematics/mcl_structures_fossil_spine_1.mts", -- 3×3×13
+		modpath.."/schematics/mcl_structures_fossil_spine_2.mts", -- 5×4×13
+		modpath.."/schematics/mcl_structures_fossil_spine_3.mts", -- 7×4×13
+		modpath.."/schematics/mcl_structures_fossil_spine_4.mts", -- 8×5×13
+	},
+})
+
+mcl_structures.register_structure("boulder",{
+	filenames = {
+		modpath.."/schematics/mcl_structures_boulder_small.mts",
+		modpath.."/schematics/mcl_structures_boulder_small.mts",
+		modpath.."/schematics/mcl_structures_boulder_small.mts",
+		modpath.."/schematics/mcl_structures_boulder.mts",
+		-- small boulder 3x as likely
+	},
+},true) --is spawned as a normal decoration. this is just for /spawnstruct
+mcl_structures.register_structure("ice_spike_small",{
+	filenames = {
+		modpath.."/schematics/mcl_structures_ice_spike_small.mts"
+	},
+},true) --is spawned as a normal decoration. this is just for /spawnstruct
+mcl_structures.register_structure("ice_spike_large",{
+	sidelen = 6,
+	filenames = {
+		modpath.."/schematics/mcl_structures_ice_spike_large.mts"
+	},
+},true) --is spawned as a normal decoration. this is just for /spawnstruct
+
+-- Debug command
+minetest.register_chatcommand("spawnstruct", {
+	params = "end_exit_portal | end_exit_portal_open | end_gateway_portal | end_portal_shrine | nether_portal | dungeon",
+	description = S("Generate a pre-defined structure near your position."),
+	privs = {debug = true},
+	func = function(name, param)
+		local player = minetest.get_player_by_name(name)
+		if not player then return end
+		local pos = player:get_pos()
+		if not pos then return end
+		pos = vector.round(pos)
+		local dir = minetest.yaw_to_dir(player:get_look_horizontal())
+		local rot = dir_to_rotation(dir)
+		local pr = PseudoRandom(pos.x+pos.y+pos.z)
+		local errord = false
+		local message = S("Structure placed.")
+		if param == "end_exit_portal" then
+			mcl_structures.generate_end_exit_portal(pos, rot, pr)
+		elseif param == "end_exit_portal_open" then
+			mcl_structures.generate_end_exit_portal_open(pos, rot, pr)
+		elseif param == "end_gateway_portal" then
+			mcl_structures.generate_end_gateway_portal(pos, rot, pr)
+		elseif param == "end_portal_shrine" then
+			mcl_structures.generate_end_portal_shrine(pos, rot, pr)
+		elseif param == "dungeon" and mcl_dungeons and mcl_dungeons.spawn_dungeon then
+			mcl_dungeons.spawn_dungeon(pos, rot, pr)
+		elseif param == "nether_portal" and mcl_portals and mcl_portals.spawn_nether_portal then
+			mcl_portals.spawn_nether_portal(pos, rot, pr, name)
+		elseif param == "" then
+			message = S("Error: No structure type given. Please use “/spawnstruct <type>”.")
+			errord = true
+		else
+			for n,d in pairs(mcl_structures.registered_structures) do
+				if n == param then
+					mcl_structures.place_structure(pos,d,pr)
+					return true,message
+				end
+			end
+			message = S("Error: Unknown structure type. Please use “/spawnstruct <type>”.")
+			errord = true
+		end
+		minetest.chat_send_player(name, message)
+		if errord then
+			minetest.chat_send_player(name, S("Use /help spawnstruct to see a list of avaiable types."))
+		end
+	end
+})
+minetest.register_on_mods_loaded(function()
+	local p = ""
+	for n,_ in pairs(mcl_structures.registered_structures) do
+		p = p .. " | "..n
+	end
+	minetest.registered_chatcommands["spawnstruct"].params = minetest.registered_chatcommands["spawnstruct"].params .. p
+end)
+>>>>>>> mcl2/master

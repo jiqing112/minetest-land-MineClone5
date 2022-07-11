@@ -339,14 +339,6 @@ function mcl_inventory.set_creative_formspec(player, start_i, pagenum, inv_size,
 	if name == "inv" then
 		inv_bg = "crafting_inventory_creative_survival.png"
 
-		-- Show armor and player image
-		local player_preview
-		if minetest.settings:get_bool("3d_player_preview", true) then
-			player_preview = mcl_player.get_player_formspec_model(player, 3.9, 1.4, 1.2333, 2.4666, "")
-		else
-			player_preview = "image[3.9,1.4;1.2333,2.4666;"..mcl_player.player_get_preview(player).."]"
-		end
-
 		-- Background images for armor slots (hide if occupied)
 		local armor_slot_imgs = ""
 		local inv = player:get_inventory()
@@ -367,8 +359,12 @@ function mcl_inventory.set_creative_formspec(player, start_i, pagenum, inv_size,
 			armor_slot_imgs = armor_slot_imgs .. "image[1.5,2.025;1,1;mcl_inventory_empty_armor_slot_shield.png]"
 		end
 
+		if inv:get_stack("offhand", 1):is_empty() then
+			armor_slot_imgs = armor_slot_imgs .. "image[1.5,2.025;1,1;mcl_inventory_empty_armor_slot_shield.png]"
+		end
+
 		local stack_size = get_stack_size(player)
-		
+
 		-- Survival inventory slots
 		main_list = "list[current_player;main;0,3.75;9,3;9]"..
 			mcl_formspec.get_itemslot_bg(0,3.75,9,3)..
@@ -386,7 +382,8 @@ function mcl_inventory.set_creative_formspec(player, start_i, pagenum, inv_size,
 
 			armor_slot_imgs..
 			-- player preview
-			player_preview..
+			-- player_preview..
+			mcl_player.get_player_formspec_model(player, 3.9, 1.4, 1.2333, 2.4666, "")..
 
 			-- crafting guide button
 			"image_button[9,1;1,1;craftguide_book.png;__mcl_craftguide;]"..
@@ -404,7 +401,7 @@ function mcl_inventory.set_creative_formspec(player, start_i, pagenum, inv_size,
 			-- switch stack size button
 			"image_button[9,5;1,1;default_apple.png;__switch_stack;]"..
 			"label[9.4,5.4;".. F(C("#FFFFFF", stack_size ~= 1 and stack_size or "")) .."]"..
-			"tooltip[__switch_stack;"..F(S("Switch stack size")).."]"			
+			"tooltip[__switch_stack;"..F(S("Switch stack size")).."]"
 
 		-- For shortcuts
 		listrings = listrings ..

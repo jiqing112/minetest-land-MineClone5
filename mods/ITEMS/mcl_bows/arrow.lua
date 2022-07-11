@@ -1,5 +1,7 @@
 local S = minetest.get_translator(minetest.get_current_modname())
 
+local mod_target = minetest.get_modpath("mcl_target")
+
 local math = math
 local vector = vector
 
@@ -116,8 +118,7 @@ function ARROW_ENTITY.on_step(self, dtime)
 	self._time_in_air = self._time_in_air + .001
 
 	local pos = self.object:get_pos()
-	local dpos = table.copy(pos) -- digital pos
-	dpos = vector.round(dpos)
+	local dpos = vector.round(vector.new(pos)) -- digital pos
 	local node = minetest.get_node(dpos)
 
 	if self._stuck then
@@ -187,7 +188,8 @@ function ARROW_ENTITY.on_step(self, dtime)
 		-- The radius of 3 is fairly liberal, but anything lower than than will cause
 		-- arrow to hilariously go through mobs often.
 		-- TODO: Implement an ACTUAL collision detection (engine support needed).
-		local objs = minetest.get_objects_inside_radius(pos, 1.5)
+
+
 		local closest_object
 		local closest_distance
 
@@ -195,37 +197,38 @@ function ARROW_ENTITY.on_step(self, dtime)
 			self._deflection_cooloff = self._deflection_cooloff - dtime
 		end
 
-		-- Iterate through all objects and remember the closest attackable object
-		for k, obj in pairs(objs) do
-			local ok = false
-			-- Arrows can only damage players and mobs
-			if mcl_util and mcl_util.is_player(obj) then
-				ok = true
-			elseif obj:get_luaentity() then
-				if (obj:get_luaentity()._cmi_is_mob or obj:get_luaentity()._hittable_by_projectile) then
+		local arrow_dir = self.object:get_velocity()
+		--create a raycast from the arrow based on the velocity of the arrow to deal with lag
+		local raycast = minetest.raycast(pos, vector.add(pos, vector.multiply(arrow_dir, 0.1)), true, false)
+		for hitpoint in raycast do
+			if hitpoint.type == "object" then
+				-- find the closest object that is in the way of the arrow
+				local ok = false
+				if hitpoint.ref:is_player() then
 					ok = true
+				elseif hitpoint.ref:get_luaentity() then
+					if (hitpoint.ref:get_luaentity().is_mob or hitpoint.ref:get_luaentity()._hittable_by_projectile) then
+						ok = true
+					end
 				end
-			end
-
-			if ok then
-				local dist = vector.distance(pos, obj:get_pos())
-				if not closest_object or not closest_distance then
-					closest_object = obj
-					closest_distance = dist
-				elseif dist < closest_distance then
-					closest_object = obj
-					closest_distance = dist
+				if ok then
+					local dist = vector.distance(hitpoint.ref:get_pos(), pos)
+					if not closest_object or not closest_distance then
+						closest_object = hitpoint.ref
+						closest_distance = dist
+					elseif dist < closest_distance then
+						closest_object = hitpoint.ref
+						closest_distance = dist
+					end
 				end
 			end
 		end
-
-		-- If an attackable object was found, we will damage the closest one only
 
 		if closest_object then
 			local obj = closest_object
 			local is_player = mcl_util and mcl_util.is_player(obj)
 			local lua = obj:get_luaentity()
-			if obj == self._shooter and self._time_in_air > 1.02 or obj ~= self._shooter and (is_player or (lua and (lua._cmi_is_mob or lua._hittable_by_projectile))) then
+			if obj == self._shooter and self._time_in_air > 1.02 or obj ~= self._shooter and (is_player or (lua and (lua.is_mob or lua._hittable_by_projectile))) then
 				if obj:get_hp() > 0 then
 					-- Check if there is no solid node between arrow and object
 					local ray = minetest.raycast(self.object:get_pos(), obj:get_pos(), true)
@@ -248,7 +251,7 @@ function ARROW_ENTITY.on_step(self, dtime)
 					-- Punch target object but avoid hurting enderman.
 					if not lua or lua.name ~= "mobs_mc:enderman" then
 						if not self._in_player then
-							damage_particles(self.object:get_pos(), self._is_critical)
+							damage_particles(vector.add(pos, vector.multiply(self.object:get_velocity(), 0.1)), self._is_critical)
 						end
 						if mcl_burning.is_burning(self.object) then
 							mcl_burning.set_on_fire(obj, 5)
@@ -258,7 +261,7 @@ function ARROW_ENTITY.on_step(self, dtime)
 								full_punch_interval=1.0,
 								damage_groups={fleshy=self._damage},
 							}, self.object:get_velocity())
-							if mcl_util and mcl_util.is_player(obj) then
+							if obj:is_player() then
 								if not mcl_shields.is_blocking(obj) then
 									local placement
 									self._placement = math.random(1, 2)
@@ -303,13 +306,15 @@ function ARROW_ENTITY.on_step(self, dtime)
 								minetest.after(150, function()
 									self.object:remove()
 								end)
+							else
+								self.object:remove()
 							end
 						end
 					end
 
 
 					if is_player then
-						if self._shooter and (mcl_util and mcl_util.is_player(self._shooter)) and not self._in_player and not self._blocked then
+						if self._shooter and self._shooter:is_player() and not self._in_player and not self._blocked then
 							-- “Ding” sound for hitting another player
 							minetest.sound_play({name="mcl_bows_hit_player", gain=0.1}, {to_player=self._shooter:get_player_name()}, true)
 						end
@@ -327,7 +332,6 @@ function ARROW_ENTITY.on_step(self, dtime)
 						end
 					end
 					if not self._in_player and not self._blocked then
-
 						minetest.sound_play({name="mcl_bows_hit_other", gain=0.3}, {pos=self.object:get_pos(), max_hear_distance=16}, true)
 					end
 				end
@@ -390,6 +394,11 @@ function ARROW_ENTITY.on_step(self, dtime)
 
 				if mcl_burning.is_burning(self.object) and snode.name == "mcl_tnt:tnt" then
 					tnt.ignite(self._stuckin)
+				end
+
+				-- Activate target
+				if mod_target and snode.name == "mcl_target:target_off" then
+					mcl_target.hit(self._stuckin, 1) --10 redstone ticks
 				end
 
 				-- Push the button! Push, push, push the button!
