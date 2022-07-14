@@ -108,6 +108,7 @@ local fox = {
 				y = lp.y - s.y,
 				z = lp.z - s.z
 			}
+			-- scare logic
 			if (object
 			and object:is_player()
 			and not object:get_player_control().sneak)
@@ -119,11 +120,13 @@ local fox = {
 					self.state = "runaway"
 					self.object:set_rotation({x=0,y=(atan(vec.z / vec.x) + 3 * pi / 2) - self.rotate,z=0})
 				end
-				-- this next line causes jittering
-				if self.reach > vector.distance(self.object:get_pos(), object:get_pos()) then
+				-- if it is within a distance of the player or wolf
+				if 6 > vector.distance(self.object:get_pos(), object:get_pos()) then
 					self.timer = self.timer + 1
-					if self.timer > 10 then
+					-- have some time before getting scared
+					if self.timer > 6 then
 						self.timer = 0
+						-- punch the fox for the player, but don't do any damage
 						self.object:punch(object, 0, {
 							full_punch_interval = 0,
 							damage_groups = {fleshy = 0}
