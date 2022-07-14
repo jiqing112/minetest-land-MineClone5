@@ -108,24 +108,27 @@ local fox = {
 				y = lp.y - s.y,
 				z = lp.z - s.z
 			}
-			if object
-			and (object:is_player()
+			if (object
+			and object:is_player()
 			and not object:get_player_control().sneak)
-			or not (object:is_player()
+			or (not object:is_player()
 			and object:get_luaentity()
 			and object:get_luaentity().name == "mobs_mc:wolf") then
 				-- don't keep setting it once it's set
 				if not self.state == "runaway" then
 					self.state = "runaway"
+					self.object:set_rotation({x=0,y=(atan(vec.z / vec.x) + 3 * pi / 2) - self.rotate,z=0})
 				end
 				-- this next line causes jittering
-				-- self.object:set_rotation({x=0,y=(atan(vec.z / vec.x) + 3 * pi / 2) - self.rotate,z=0})
-				if self.reach > vector.distance(self.object:get_pos(), object:get_pos()) and self.timer > .9 then
-					self.timer = 0
-					object:punch(self.object, 1.0, {
-						full_punch_interval = 1.0,
-						damage_groups = {fleshy = self.damage}
-					}, nil)
+				if self.reach > vector.distance(self.object:get_pos(), object:get_pos()) then
+					self.timer = self.timer + 1
+					if self.timer > 10 then
+						self.timer = 0
+						self.object:punch(object, 0, {
+							full_punch_interval = 0,
+							damage_groups = {fleshy = 0}
+						}, nil)
+					end
 				end
 			end
 		end
