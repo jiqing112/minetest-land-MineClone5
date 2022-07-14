@@ -14,8 +14,6 @@ end
 
 local S = minetest.get_translator("extra_mobs")
 
-local default_walk_chance = 70
-
 --###################
 --################### fox
 --###################
