@@ -14,6 +14,7 @@ mcl_shields = {
 	enchantments = {"mending", "unbreaking"},
 	players = {},
 }
+local players = mcl_shields.players
 
 local interact_priv = minetest.registered_privileges.interact
 interact_priv.give_to_singleplayer = false
@@ -110,7 +111,7 @@ end
 
 function mcl_shields.is_blocking(obj)
 	if not mcl_util or not mcl_util.is_player(obj) then return end
-	local blocking = mcl_shields.players[obj].blocking
+	local blocking = players[obj].blocking
 	if blocking > 0 then
 		local shieldstack = obj:get_wielded_item()
 		if blocking == 1 then
@@ -155,7 +156,7 @@ local function modify_shield(player, vpos, vrot, i)
 	if i == 1 then
 		arm = "Left"
 	end
-	local player_data = mcl_shields.players[player]
+	local player_data = players[player]
 	if not player_data then return end
 	local shields = player_data.shields
 	if not shields then return end
@@ -178,7 +179,10 @@ local function set_shield(player, block, i)
 			modify_shield(player, vector.new(3, -5, 0), vector.new(0, 0, 0), i)
 		end
 	end
-	local shield = mcl_shields.players[player].shields[i]
+	local player_data = players[player]
+	if not player_data then return end
+	local player_shields = player_data.shields
+	local shield = player_shields[i]
 	if not shield then return end
 	local luaentity = shield:get_luaentity()
 	if not luaentity then return end
@@ -219,12 +223,12 @@ end
 local function add_shield_entity(player, i)
 	local shield = minetest.add_entity(player:get_pos(), "mcl_shields:shield_entity")
 	shield:get_luaentity()._shield_number = i
-	mcl_shields.players[player].shields[i] = shield
+	players[player].shields[i] = shield
 	set_shield(player, false, i)
 end
 
 local function remove_shield_entity(player, i)
-	local shields = mcl_shields.players[player].shields
+	local shields = players[player].shields
 	if shields[i] then
 		shields[i]:remove()
 		shields[i] = nil
@@ -232,7 +236,7 @@ local function remove_shield_entity(player, i)
 end
 
 local function handle_blocking(player)
-	local player_shield = mcl_shields.players[player]
+	local player_shield = players[player]
 	local rmb = player:get_player_control().RMB
 	if rmb then
 		local shield_in_offhand = mcl_shields.wielding_shield(player, 1)
@@ -274,7 +278,7 @@ local function handle_blocking(player)
 end
 
 local function update_shield_entity(player, blocking, i)
-	local shield = mcl_shields.players[player].shields[i]
+	local shield = players[player].shields[i]
 	if mcl_shields.wielding_shield(player, i) then
 		if not shield then
 			add_shield_entity(player, i)
@@ -378,7 +382,7 @@ end)
 
 minetest.register_on_leaveplayer(function(player)
 	shield_hud[player] = nil
-	mcl_shields.players[player] = nil
+	players[player] = nil
 end)
 
 minetest.register_craft({
@@ -468,7 +472,7 @@ minetest.register_on_craft(function(itemstack, player, old_craft_grid, craft_inv
 end)
 
 minetest.register_on_joinplayer(function(player)
-	mcl_shields.players[player] = {
+	players[player] = {
 		shields = {},
 		blocking = 0,
 	}
