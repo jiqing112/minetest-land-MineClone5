@@ -1,10 +1,5 @@
-<<<<<<< HEAD
-local S = minetest.get_translator(minetest.get_current_modname())
-local modpath = minetest.get_modpath(minetest.get_current_modname())
-=======
 local S = minetest.get_translator("mcl_lanterns")
 local modpath = minetest.get_modpath("mcl_lanterns")
->>>>>>> mcl2/master
 
 mcl_lanterns = {}
 
@@ -14,8 +9,6 @@ TODO:
 - remove the hack arround walmounted nodes
 ]]
 
-<<<<<<< HEAD
-=======
 local allowed_non_solid_nodes_floor = {
 	"mcl_core:ice",
 	"mcl_nether:soul_sand",
@@ -91,7 +84,6 @@ local function check_placement(node, wdir)
 	end
 end
 
->>>>>>> mcl2/master
 function mcl_lanterns.register_lantern(name, def)
 	local itemstring_floor = "mcl_lanterns:"..name.."_floor"
 	local itemstring_ceiling = "mcl_lanterns:"..name.."_ceiling"
@@ -144,11 +136,6 @@ function mcl_lanterns.register_lantern(name, def)
 
 			local under = pointed_thing.under
 			local above = pointed_thing.above
-<<<<<<< HEAD
-
-			local wdir = minetest.dir_to_wallmounted(vector.subtract(under, above))
-			local fakestack = itemstack
-=======
 			local node = minetest.get_node(under)
 
 			local wdir = minetest.dir_to_wallmounted(vector.subtract(under, above))
@@ -158,7 +145,6 @@ function mcl_lanterns.register_lantern(name, def)
 				return itemstack
 			end
 
->>>>>>> mcl2/master
 			if wdir == 0 then
 				fakestack:set_name(itemstring_ceiling)
 			elseif wdir == 1 then

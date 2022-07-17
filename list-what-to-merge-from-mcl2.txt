@@ -1,8 +1,3 @@
-mods/ITEMS/mcl_itemframes/init.lua
-mods/ITEMS/mcl_lanterns/init.lua
-mods/ITEMS/mcl_lanterns/mod.conf
-mods/ITEMS/mcl_lanterns/register.lua
-mods/ITEMS/mcl_maps/init.lua
 mods/ITEMS/mcl_mobitems/init.lua
 mods/ITEMS/mcl_mobitems/locale/mcl_mobitems.fr.tr
 mods/ITEMS/mcl_mobitems/locale/mcl_mobitems.ru.tr
