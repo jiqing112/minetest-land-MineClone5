@@ -63,40 +63,42 @@ local function add_wear(placer, itemstack)
 end
 
 local function anti_oxidation(itemstack, placer, pointed_thing)
-    if pointed_thing.type ~= "node" then return end
+	local pointed_thing = pointed_thing
+	if pointed_thing.type ~= "node" then return end
 
-	local node = minetest.get_node(pointed_thing.under)
-    local noddef = minetest.registered_nodes[minetest.get_node(pointed_thing.under).name]
+	local pointed_thing_under = pointed_thing.under
+	local node = minetest.get_node(pointed_thing_under)
+	local node_def = minetest.registered_nodes[node.name]
+	if not node_def then return end
 
-    if not placer:get_player_control().sneak and noddef.on_rightclick then
-        return minetest.item_place(itemstack, placer, pointed_thing)
-    end
+	if not placer:get_player_control().sneak and node_def.on_rightclick then
+		return minetest.item_place(itemstack, placer, pointed_thing)
+	end
 
-    if minetest.is_protected(pointed_thing.under, placer:get_player_name()) then
-        minetest.record_protection_violation(pointed_thing.under, placer:get_player_name())
-        return itemstack
-    end
+	local placer_name = placer:get_player_name()
+	if minetest.is_protected(pointed_thing_under, placer_name) then
+		minetest.record_protection_violation(pointed_thing_under, placer_name)
+		return itemstack
+	end
 
-    if noddef._mcl_stripped_variant == nil then
+	if not node_def._mcl_stripped_variant then
 		for _, c in pairs(stairs) do
-			if noddef.name == "mcl_stairs:"..c[1].."_copper_"..c[2].."_cut"..c[3] then
-				minetest.swap_node(pointed_thing.under, {name="mcl_stairs:"..c[1].."_copper_"..c[4], param2=node.param2})
+			if node_def.name == "mcl_stairs:"..c[1].."_copper_"..c[2].."_cut"..c[3] then
+				minetest.swap_node(pointed_thing_under, {name="mcl_stairs:"..c[1].."_copper_"..c[4], param2=node.param2})
 				anti_oxidation_particles(pointed_thing)
 				add_wear(placer, itemstack)
 			end
 		end
-		if noddef._mcl_anti_oxidation_variant ~= nil then
-			minetest.swap_node(pointed_thing.under, {name=noddef._mcl_anti_oxidation_variant, param2=node.param2})
+		if node_def._mcl_anti_oxidation_variant then
+			minetest.swap_node(pointed_thing_under, {name=node_def._mcl_anti_oxidation_variant, param2=node.param2})
 			anti_oxidation_particles(pointed_thing)
 			add_wear(placer, itemstack)
 		end
-	elseif noddef._mcl_stripped_variant ~= nil then
-		minetest.swap_node(pointed_thing.under, {name=noddef._mcl_stripped_variant, param2=node.param2})
+	elseif node_def._mcl_stripped_variant then
+		minetest.swap_node(pointed_thing_under, {name=node_def._mcl_stripped_variant, param2=node.param2})
 		add_wear(placer, itemstack)
-	else
-		return itemstack
 	end
-    return itemstack
+	return itemstack
 end
 
 local function register_axe_override(axe_name)
