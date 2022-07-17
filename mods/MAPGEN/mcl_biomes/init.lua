@@ -3045,6 +3045,8 @@ local function register_decorations()
 			octaves = 3,
 			persist = 0.6
 		},
+		spawn_by = "air",
+		num_spawn_by = 8,
 		decoration = "mcl_core:cactus",
 		biomes = {"Desert",
 			"Mesa","Mesa_sandlevel",
