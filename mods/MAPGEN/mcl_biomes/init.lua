@@ -3045,8 +3045,6 @@ local function register_decorations()
 			octaves = 3,
 			persist = 0.6
 		},
-		y_min = 4,
-		y_max = mcl_mapgen.overworld.max,
 		decoration = "mcl_core:cactus",
 		biomes = {"Desert",
 			"Mesa","Mesa_sandlevel",
