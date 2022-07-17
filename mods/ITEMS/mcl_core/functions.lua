@@ -4,24 +4,10 @@
 
 local modpath = minetest.get_modpath(minetest.get_current_modname())
 
-local minetest_get_item_group = minetest.get_item_group
-local minetest_get_node = minetest.get_node
-local math_random = math.random
-local minetest_after = minetest.after
-
-local mg_name = mcl_mapgen.name
-local v6 = mcl_mapgen.v6
-
 local math = math
 local vector = vector
-
-local OAK_TREE_ID = 1
-local DARK_OAK_TREE_ID = 2
-local SPRUCE_TREE_ID = 3
-local ACACIA_TREE_ID = 4
-local JUNGLE_TREE_ID = 5
-local BIRCH_TREE_ID = 6
-
+local math_random = math.random
+local minetest_after = minetest.after
 local minetest_get_node = minetest.get_node
 local minetest_get_node_group = minetest.get_node_group
 local minetest_get_node_drops = minetest.get_node_drops
@@ -31,6 +17,16 @@ local minetest_get_item_group = minetest.get_item_group
 local mcl_time_get_number_of_times_at_pos = mcl_time.get_number_of_times_at_pos
 local minetest_get_objects_inside_radius = minetest.get_objects_inside_radius
 local minetest_registered_nodes = minetest.registered_nodes
+
+local mg_name = mcl_mapgen.name
+local v6 = mcl_mapgen.v6
+
+local OAK_TREE_ID = 1
+local DARK_OAK_TREE_ID = 2
+local SPRUCE_TREE_ID = 3
+local ACACIA_TREE_ID = 4
+local JUNGLE_TREE_ID = 5
+local BIRCH_TREE_ID = 6
 
 minetest.register_abm({
 	label = "Lava cooling",
@@ -87,9 +83,46 @@ local lava_spark_census = 0
 
 function mcl_core.lava_spark_set_chance()
 	lava_spark_chance = lava_spark_limit / lava_spark_abm_census
-	minetest.after(LAVA_SPARK_ABM_INTERVAL, mcl_core.lava_spark_set_chance)
+	minetest_after(LAVA_SPARK_ABM_INTERVAL, mcl_core.lava_spark_set_chance)
 	lava_spark_abm_census = 0
 	lava_spark_census = 0
+end
+
+function lava_spark_add(pos)
+	local node = minetest_get_node(pos)
+	if minetest_get_node_group(node.name, "lava") == 0 then return end
+	
+	local above = minetest_get_node(vector.new(pos.x, pos.y + 1, pos.z))
+	if above.name ~= "air" then return end
+	
+	local pos_addend = vector.new(
+		(math_random() - 0.5) * 0.8,
+		(math_random() - 0.5) * 0.8,
+		(math_random() - 0.5) * 0.8
+	)
+	local spark_pos = vector.add(pos, pos_addend)
+	local spark = minetest.add_entity(spark_pos, "mcl_core:lava_spark")
+	if not spark then return end
+	
+	local velocity = vector.new(
+		(math_random() - 0.5) * 3,
+		(math_random() + 2) * 2,
+		(math_random() - 0.5) * 3
+	)
+	spark:set_velocity(velocity)
+	
+	spark:set_acceleration(vector.new(0, -9, 0))
+	
+	-- Set a random size
+	local size = 0.2 + math_random() * 0.2
+	local props = spark:get_properties()
+	if not props then return end
+	props.visual_size = vector.new(size, size, size)
+	spark:set_properties(props)
+	
+	local luaentity = spark:get_luaentity()
+	if not luaentity then return end
+	luaentity._life_timer = 0.4 + math_random()
 end
 
 if lava_spark_limit > 0 then
@@ -108,69 +141,8 @@ if lava_spark_limit > 0 then
 			lava_spark_abm_census = lava_spark_abm_census + 1
 		
 			if lava_spark_census >= lava_spark_limit then return end
-			if math.random() > lava_spark_chance then return end
-		
-			lava_spark_census = lava_spark_census + 1
-			minetest.after(math.random() * LAVA_SPARK_ABM_INTERVAL, mcl_core.lava_spark_add, pos)
-		end
-	})
-end
-
-function mcl_core.lava_spark_add(pos)
-	local node = minetest_get_node(pos)
-	if minetest_get_node_group(node.name, "lava") == 0 then return end
-	
-	local above = minetest_get_node(vector.new(pos.x, pos.y + 1, pos.z))
-	if above.name ~= "air" then return end
-	
-	local pos_addend = vector.new(
-		(math.random() - 0.5) * 0.8,
-		(math.random() - 0.5) * 0.8,
-		(math.random() - 0.5) * 0.8
-	)
-	local spark_pos = vector.add(pos, pos_addend)
-	local spark = minetest.add_entity(spark_pos, "mcl_core:lava_spark")
-	if not spark then return end
-	
-	local velocity = vector.new(
-		(math.random() - 0.5) * 3,
-		(math.random() + 2) * 2,
-		(math.random() - 0.5) * 3
-	)
-	spark:set_velocity(velocity)
-	
-	spark:set_acceleration(vector.new(0, -9, 0))
-	
-	-- Set a random size
-	local size = 0.2 + math.random() * 0.2
-	local props = spark:get_properties()
-	if not props then return end
-	props.visual_size = vector.new(size, size, size)
-	spark:set_properties(props)
-	
-	local luaentity = spark:get_luaentity()
-	if not luaentity then return end
-	luaentity._life_timer = 0.4 + math.random()
-end
-
-if lava_spark_limit > 0 then
-	mcl_core.lava_spark_set_chance()
-
-	minetest.register_abm({
-		label = "Lava produce sparks",
-		nodenames = {"group:lava"},
-		neighbors = {"air"},
-		interval = LAVA_SPARK_ABM_INTERVAL,
-		chance = 18,
-		action = function(pos, node)
-			local above = minetest_get_node({x = pos.x, y = pos.y + 1, z = pos.z})
-			if above.name ~= "air" then return end
-
-			lava_spark_abm_census = lava_spark_abm_census + 1
-
-			if lava_spark_census >= lava_spark_limit then return end
 			if math_random() > lava_spark_chance then return end
-
+		
 			lava_spark_census = lava_spark_census + 1
 			minetest_after(math_random() * LAVA_SPARK_ABM_INTERVAL, lava_spark_add, pos)
 		end
@@ -198,7 +170,7 @@ minetest.register_entity("mcl_core:lava_spark", {
 
 		self._smoke_timer = self._smoke_timer - dtime
 		if self._smoke_timer > 0 then return end
-		self._smoke_timer = 0.2 + math.random() * 0.3
+		self._smoke_timer = 0.2 + math_random() * 0.3
 		
 		local pos = self.object:get_pos()
 
@@ -257,9 +229,9 @@ local function drop_attached_node(p)
 	minetest.remove_node(p)
 	for _, item in pairs(minetest_get_node_drops(nn, "")) do
 		local pos = {
-			x = p.x + math.random()/2 - 0.25,
-			y = p.y + math.random()/2 - 0.25,
-			z = p.z + math.random()/2 - 0.25,
+			x = p.x + math_random()/2 - 0.25,
+			y = p.y + math_random()/2 - 0.25,
+			z = p.z + math_random()/2 - 0.25,
 		}
 		if item ~= "" then
 			minetest.add_item(pos, item)
@@ -367,7 +339,7 @@ minetest.register_abm({
 		then
 			while minetest_get_node(pos).name == "mcl_core:cactus" do
 				minetest.remove_node(pos)
-				minetest.add_item(vector.offset(pos, math.random(-0.5, 0.5), 0, math.random(-0.5, 0.5)), "mcl_core:cactus")
+				minetest.add_item(vector.offset(pos, math_random(-0.5, 0.5), 0, math_random(-0.5, 0.5)), "mcl_core:cactus")
 				pos.y = pos.y + 1
 			end
 			return
@@ -421,7 +393,7 @@ minetest.register_on_dignode(function(pos, node)
 end)
 
 local function air_leaf(leaftype)
-	if math.random(0, 50) == 3 then
+	if math_random(0, 50) == 3 then
 		return {name = "air"}
 	else
 		return {name = leaftype}
@@ -593,7 +565,7 @@ function mcl_core.generate_v6_oak_tree(pos)
 	node = {name = leaves}
 	pos.y = pos.y+3
 	--[[local rarity = 0
-	if math.random(0, 10) == 3 then
+	if math_random(0, 10) == 3 then
 		rarity = 1
 	end]]
 	for dx=-2,2 do
@@ -604,12 +576,12 @@ function mcl_core.generate_v6_oak_tree(pos)
 				pos.z = pos.z+dz
 
 				if dx == 0 and dz == 0 and dy==3 then
-					if minetest_get_node(pos).name == "air" and math.random(1, 5) <= 4 then
+					if minetest_get_node(pos).name == "air" and math_random(1, 5) <= 4 then
 						minetest.add_node(pos, node)
 						minetest.add_node(pos, air_leaf(leaves))
 					end
 				elseif dx == 0 and dz == 0 and dy==4 then
-					if minetest_get_node(pos).name == "air" and math.random(1, 5) <= 4 then
+					if minetest_get_node(pos).name == "air" and math_random(1, 5) <= 4 then
 						minetest.add_node(pos, node)
 						minetest.add_node(pos, air_leaf(leaves))
 					end
@@ -620,7 +592,7 @@ function mcl_core.generate_v6_oak_tree(pos)
 					end
 				else
 					if math.abs(dx) ~= 2 or math.abs(dz) ~= 2 then
-						if minetest_get_node(pos).name == "air" and math.random(1, 5) <= 4 then
+						if minetest_get_node(pos).name == "air" and math_random(1, 5) <= 4 then
 							minetest.add_node(pos, node)
 							minetest.add_node(pos, air_leaf(leaves))
 						end
@@ -638,14 +610,14 @@ end
 function mcl_core.generate_balloon_oak_tree(pos)
 	local path
 	local offset
-	local s = math.random(1, 12)
+	local s = math_random(1, 12)
 	if s == 1 then
 		-- Small balloon oak
 		path = modpath .. "/schematics/mcl_core_oak_balloon.mts"
 		offset = { x = -2, y = -1, z = -2 }
 	else
 		-- Large balloon oak
-		local t = math.random(1, 4)
+		local t = math_random(1, 4)
 		path = modpath .. "/schematics/mcl_core_oak_large_"..t..".mts"
 		if t == 1 or t == 3 then
 			offset = { x = -3, y = -1, z = -3 }
@@ -684,7 +656,7 @@ end
 
 function mcl_core.generate_v6_spruce_tree(pos)
 	local x, y, z = pos.x, pos.y, pos.z
-	local maxy = y + math.random(9, 13) -- Trunk top
+	local maxy = y + math_random(9, 13) -- Trunk top
 
 	local c_air = minetest.get_content_id("air")
 	local c_ignore = minetest.get_content_id("ignore")
@@ -707,7 +679,7 @@ function mcl_core.generate_v6_spruce_tree(pos)
 			local vi = a:index(x - dev, yy, zz)
 			local via = a:index(x - dev, yy + 1, zz)
 			for xx = x - dev, x + dev do
-				if math.random() < 0.95 - dev * 0.05 then
+				if math_random() < 0.95 - dev * 0.05 then
 					add_spruce_leaves(data, vi, c_air, c_ignore, c_snow,
 						c_spruce_leaves)
 				end
@@ -727,9 +699,9 @@ function mcl_core.generate_v6_spruce_tree(pos)
 	-- Lower branches layer
 	local my = 0
 	for i = 1, 20 do -- Random 2x2 squares of leaves
-		local xi = x + math.random(-3, 2)
-		local yy = maxy + math.random(-6, -5)
-		local zi = z + math.random(-3, 2)
+		local xi = x + math_random(-3, 2)
+		local yy = maxy + math_random(-6, -5)
+		local zi = z + math_random(-3, 2)
 		if yy > my then
 			my = yy
 		end
@@ -751,7 +723,7 @@ function mcl_core.generate_v6_spruce_tree(pos)
 			local vi = a:index(x - dev, yy, zz)
 			local via = a:index(x - dev, yy + 1, zz)
 			for xx = x - dev, x + dev do
-				if math.random() < 0.95 - dev * 0.05 then
+				if math_random() < 0.95 - dev * 0.05 then
 					add_spruce_leaves(data, vi, c_air, c_ignore, c_snow,
 						c_spruce_leaves)
 				end
@@ -779,14 +751,14 @@ function mcl_core.generate_v6_spruce_tree(pos)
 end
 
 function mcl_core.generate_spruce_tree(pos)
-	local r = math.random(1, 3)
+	local r = math_random(1, 3)
 	local path = modpath .. "/schematics/mcl_core_spruce_"..r..".mts"
 	minetest.place_schematic({ x = pos.x - 3, y = pos.y - 1, z = pos.z - 3 }, path, "0", nil, false)
 end
 
 function mcl_core.generate_huge_spruce_tree(pos)
-	local r1 = math.random(1, 2)
-	local r2 = math.random(1, 4)
+	local r1 = math_random(1, 2)
+	local r2 = math_random(1, 4)
 	local path
 	local offset = { x = -4, y = -1, z = -5 }
 	if r1 <= 2 then
@@ -806,7 +778,7 @@ end
 
 -- Acacia tree (multiple variants)
 function mcl_core.generate_acacia_tree(pos)
-	local r = math.random(1, 7)
+	local r = math_random(1, 7)
 	local offset = vector.new()
 	if r == 2 or r == 3 then
 		offset = { x = -4, y = -1, z = -4 }
@@ -858,9 +830,9 @@ local function add_trunk_and_leaves(data, a, pos, tree_cid, leaves_cid,
 
 	-- Randomly add leaves in 2x2x2 clusters.
 	for i = 1, iters do
-		local clust_x = x + math.random(-size, size - 1)
-		local clust_y = y + height + math.random(-size, 0)
-		local clust_z = z + math.random(-size, size - 1)
+		local clust_x = x + math_random(-size, size - 1)
+		local clust_y = y + height + math_random(-size, 0)
+		local clust_z = z + math_random(-size, size - 1)
 
 		for xi = 0, 1 do
 		for yi = 0, 1 do
@@ -884,7 +856,7 @@ function mcl_core.generate_v6_jungle_tree(pos)
 	--]]
 
 	local x, y, z = pos.x, pos.y, pos.z
-	local height = math.random(8, 12)
+	local height = math_random(8, 12)
 	local c_air = minetest.get_content_id("air")
 	local c_ignore = minetest.get_content_id("ignore")
 	local c_jungletree = minetest.get_content_id("mcl_core:jungletree")
@@ -905,7 +877,7 @@ function mcl_core.generate_v6_jungle_tree(pos)
 		local vi_1 = a:index(x - 1, y - 1, z + z_dist)
 		local vi_2 = a:index(x - 1, y, z + z_dist)
 		for x_dist = -1, 1 do
-			if math.random(1, 3) >= 2 then
+			if math_random(1, 3) >= 2 then
 				if data[vi_1] == c_air or data[vi_1] == c_ignore then
 					data[vi_1] = c_jungletree
 				elseif data[vi_2] == c_air or data[vi_2] == c_ignore then
@@ -930,7 +902,7 @@ end
 -- With pos being the lower X and the higher Z value of the trunk.
 function mcl_core.generate_huge_jungle_tree(pos)
 	-- 2 variants
-	local r = math.random(1, 2)
+	local r = math_random(1, 2)
 	local path = modpath.."/schematics/mcl_core_jungle_tree_huge_"..r..".mts"
 	minetest.place_schematic({x = pos.x - 6, y = pos.y - 1, z = pos.z - 7}, path, "random", nil, false)
 end
@@ -1191,7 +1163,7 @@ local function sapling_grow_action(tree_id, soil_needed, one_by_one, two_by_two,
 			end
 				if one_by_one and tree_id == OAK_TREE_ID then
 				-- There is a chance that this tree wants to grow as a balloon oak
-				if math.random(1, 12) == 1 then
+				if math_random(1, 12) == 1 then
 					-- Check if there is room for that
 					if check_tree_growth(pos, tree_id, { balloon = true }) then
 						minetest.set_node(pos, {name="air"})
@@ -1204,7 +1176,7 @@ local function sapling_grow_action(tree_id, soil_needed, one_by_one, two_by_two,
 			if one_by_one and check_tree_growth(pos, tree_id) then
 				-- Single sapling
 				minetest.set_node(pos, {name="air"})
-				--local r = math.random(1, 12)
+				--local r = math_random(1, 12)
 				mcl_core.generate_tree(pos, tree_id)
 				return
 			end
@@ -1355,7 +1327,7 @@ minetest.register_lbm({
 
 local function leafdecay_particles(pos, node)
 	minetest.add_particlespawner({
-		amount = math.random(10, 20),
+		amount = math_random(10, 20),
 		time = 0.1,
 		minpos = vector.add(pos, {x=-0.4, y=-0.4, z=-0.4}),
 		maxpos = vector.add(pos, {x=0.4, y=0.4, z=0.4}),
@@ -1393,7 +1365,7 @@ local function vinedecay_particles(pos, node)
 	end
 
 	minetest.add_particlespawner({
-		amount = math.random(8, 16),
+		amount = math_random(8, 16),
 		time = 0.1,
 		minpos = vector.add(pos, relpos1),
 		maxpos = vector.add(pos, relpos2),
@@ -1431,7 +1403,7 @@ minetest.register_abm({
 
 		-- Add vines below pos (if empty)
 		local function spread_down(origin, target, dir, node)
-			if math.random(1, 2) == 1 then
+			if math_random(1, 2) == 1 then
 				if minetest_get_node(target).name == "air" then
 					minetest.add_node(target, {name = "mcl_core:vine", param2 = node.param2})
 				end
@@ -1443,7 +1415,7 @@ minetest.register_abm({
 			local vines_in_area = minetest.find_nodes_in_area({x=origin.x-4, y=origin.y-1, z=origin.z-4}, {x=origin.x+4, y=origin.y+1, z=origin.z+4}, "mcl_core:vine")
 			-- Less then 4 vines blocks around the ticked vines block (remember the ticked block is counted by above function as well)
 			if #vines_in_area < 5 then
-				if math.random(1, 2) == 1 then
+				if math_random(1, 2) == 1 then
 					if minetest_get_node(target).name == "air" then
 						local backup_dir = minetest.wallmounted_to_dir(node.param2)
 						local backup = vector.subtract(target, backup_dir)
@@ -1486,7 +1458,7 @@ minetest.register_abm({
 			{ { x= 0, y= 0, z=-1 }, spread_horizontal },
 		}
 
-		local d = math.random(1, #directions)
+		local d = math_random(1, #directions)
 		local dir = directions[d][1]
 		local spread = directions[d][2]
 
@@ -1578,9 +1550,9 @@ minetest.register_abm({
 			local itemstacks = minetest_get_node_drops(n0.name)
 			for _, itemname in pairs(itemstacks) do
 				local p_drop = {
-					x = p0.x - 0.5 + math.random(),
-					y = p0.y - 0.5 + math.random(),
-					z = p0.z - 0.5 + math.random(),
+					x = p0.x - 0.5 + math_random(),
+					y = p0.y - 0.5 + math_random(),
+					z = p0.z - 0.5 + math_random(),
 				}
 				minetest.add_item(p_drop, itemname)
 			end
