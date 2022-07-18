@@ -1,8 +1,4 @@
-Please run the following command to update contributor list:
-
-```bash
-# git log --pretty="%an" | sort | uniq >CONTRUBUTOR_LIST.txt
-```
+Please run `./update_credits.sh` from [tools](../../../tools) folder to update contributor list.
 
 Please check that there is no error on execution, and `CONTRUBUTOR_LIST.txt` is updated.
 
