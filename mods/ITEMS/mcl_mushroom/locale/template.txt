@@ -19,7 +19,6 @@ Warped Bark Slab=
 Double Warped Bark Slab=
 Warped Nylium=
 Warped Checknode - only to check!=
-Warped Hyphae Wood=
 Warped Stair=
 Warped Slab=
 Crimson Fungus Mushroom=
