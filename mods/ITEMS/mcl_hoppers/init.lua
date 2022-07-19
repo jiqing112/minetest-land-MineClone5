@@ -1,6 +1,11 @@
 local S = minetest.get_translator(minetest.get_current_modname())
 
-local get_item_group = minetest.get_item_group
+local minetest_get_item_group = minetest.get_item_group
+local minetest_registered_items = minetest.registered_items
+local minetest_get_node = minetest.get_node
+local minetest_get_meta = minetest.get_meta
+local minetest_get_objects_inside_radius = minetest.get_objects_inside_radius
+local math_abs = math.abs
 
 --[[ BEGIN OF NODE DEFINITIONS ]]
 
@@ -55,14 +60,14 @@ local def_hopper = {
 	is_ground_content = false,
 
 	on_construct = function(pos)
-		local meta = minetest.get_meta(pos)
+		local meta = minetest_get_meta(pos)
 		meta:set_string("formspec", mcl_hoppers_formspec)
 		local inv = meta:get_inventory()
 		inv:set_size("main", 5)
 	end,
 
 	after_dig_node = function(pos, oldnode, oldmetadata, digger)
-		local meta = minetest.get_meta(pos)
+		local meta = minetest_get_meta(pos)
 		local meta2 = meta:to_table()
 		meta:from_table(oldmetadata)
 		local inv = meta:get_inventory()
@@ -140,7 +145,7 @@ def_hopper_enabled.on_place = function(itemstack, placer, pointed_thing)
 	local upos  = pointed_thing.under
 	local apos = pointed_thing.above
 
-	local uposnode = minetest.get_node(upos)
+	local uposnode = minetest_get_node(upos)
 	local uposnodedef = minetest.registered_nodes[uposnode.name]
 	if not uposnodedef then return itemstack end
 	-- Use pointed node's on_rightclick function first, if present
@@ -243,14 +248,14 @@ local def_hopper_side = {
 	is_ground_content = false,
 
 	on_construct = function(pos)
-		local meta = minetest.get_meta(pos)
+		local meta = minetest_get_meta(pos)
 		meta:set_string("formspec", mcl_hoppers_formspec)
 		local inv = meta:get_inventory()
 		inv:set_size("main", 5)
 	end,
 
 	after_dig_node = function(pos, oldnode, oldmetadata, digger)
-		local meta = minetest.get_meta(pos)
+		local meta = minetest_get_meta(pos)
 		local meta2 = meta
 		meta:from_table(oldmetadata)
 		local inv = meta:get_inventory()
@@ -331,40 +336,47 @@ def_hopper_side_disabled.mesecons = {
 }
 minetest.register_node("mcl_hoppers:hopper_side_disabled", def_hopper_side_disabled)
 
---[[ END OF NODE DEFINITIONS ]]
-
---[[ BEGIN OF ABM DEFINITONS ]]
-
--- Make hoppers suck in dropped items
 minetest.register_abm({
 	label = "Hoppers suck in dropped items",
-	nodenames = {"mcl_hoppers:hopper","mcl_hoppers:hopper_side"},
-	interval = 1.0,
+	nodenames = {
+		"mcl_hoppers:hopper",
+		"mcl_hoppers:hopper_side",
+	},
+	interval = 1,
 	chance = 1,
-	action = function(pos, node, active_object_count, active_object_count_wider)
-		local abovenode = minetest.get_node({x=pos.x, y=pos.y+1, z=pos.z})
-		if not minetest.registered_items[abovenode.name] then return end
-		-- Don't bother checking item enties if node above is a container (should save some CPU)
-		if get_item_group(abovenode.name, "container") then
-			return
-		end
-		local meta = minetest.get_meta(pos)
+	action = function(pos, node)
+		local pos = pos
+		local meta = minetest_get_meta(pos)
 		local inv = meta:get_inventory()
+		if not inv then return end
+		local x, y, z = pos.x, pos.y, pos.z
+		local y_above = y + 1
 
-		for _,object in pairs(minetest.get_objects_inside_radius(pos, 2)) do
-		    local entity = object:get_luaentity()
-			if not object:is_player() and entity and entity.name == "__builtin:item" and not entity._removed then
-				if inv and inv:room_for_item("main", ItemStack(object:get_luaentity().itemstring)) then
-					-- Item must get sucked in when the item just TOUCHES the block above the hopper
-					-- This is the reason for the Y calculation.
-					-- Test: Items on farmland and slabs get sucked, but items on full blocks don't
-					local posob = object:get_pos()
-					local posob_miny = posob.y + object:get_properties().collisionbox[2]
-					if math.abs(posob.x-pos.x) <= 0.5 and (posob_miny-pos.y < 1.5 and posob.y-pos.y >= 0.3) then
-						entity._removed = true
-						entity.itemstring = ""
-						object:remove()
-						inv:add_item("main", ItemStack(object:get_luaentity().itemstring))
+		local pos_above = {x = x, y = y_above, z = z}
+		local above_node = minetest_get_node(pos_above)
+		local above_node_name = above_node.name
+		if minetest_registered_items[above_node_name] and minetest_get_item_group(above_node_name, "container") == 0 then
+			-- Suck in dropped items
+			for _, object in pairs(minetest_get_objects_inside_radius(pos_above, 1)) do
+				if not object:is_player() then
+					local entity = object:get_luaentity()
+					local entity_name = entity and entity.name
+					if entity_name == "__builtin:item" then
+						local itemstring = entity.itemstring
+						if itemstring and itemstring ~= "" and inv:room_for_item("main", ItemStack(itemstring)) then
+							-- Item must get sucked in when the item just TOUCHES the block above the hopper
+							-- This is the reason for the Y calculation.
+							-- Test: Items on farmland and slabs get sucked, but items on full blocks don't
+							local object_pos = object:get_pos()
+							local object_pos_miny = object_pos.y + object:get_properties().collisionbox[2]
+							if  (math_abs(object_pos.x    - x      ) <= 0.5)
+							and (math_abs(object_pos_miny - y_above) <= 0.5)
+							and (math_abs(object_pos.z    - z      ) <= 0.5)
+							then
+								object:remove()
+								inv:add_item("main", ItemStack(itemstring))
+							end
+						end
 					end
 				end
 			end
@@ -393,15 +405,16 @@ minetest.register_abm({
 	neighbors = {"group:container"},
 	interval = 1.0,
 	chance = 1,
-	action = function(pos, node, active_object_count, active_object_count_wider)
+	action = function(pos, node)
 		-- Get node pos' for item transfer
 		local uppos = {x=pos.x,y=pos.y+1,z=pos.z}
 		local downpos = {x=pos.x,y=pos.y-1,z=pos.z}
 
 		-- Suck an item from the container above into the hopper
-		local upnode = minetest.get_node(uppos)
+		local upnode = minetest_get_node(uppos)
 		if not minetest.registered_nodes[upnode.name] then return end
-		local g = get_item_group(upnode.name, "container")
+
+		local g = minetest_get_item_group(upnode.name, "container")
 		local sucked = mcl_util.move_item_container(uppos, pos)
 
 		-- Also suck in non-fuel items from furnace fuel slot
@@ -413,7 +426,7 @@ minetest.register_abm({
 		end
 
 		-- Move an item from the hopper into container below
-		local downnode = minetest.get_node(downpos)
+		local downnode = minetest_get_node(downpos)
 		if not minetest.registered_nodes[downnode.name] then return end
 		mcl_util.move_item_container(pos, downpos)
 	end,
@@ -425,9 +438,9 @@ minetest.register_abm({
 	neighbors = {"group:container"},
 	interval = 1.0,
 	chance = 1,
-	action = function(pos, node, active_object_count, active_object_count_wider)
+	action = function(pos, node)
 		-- Determine to which side the hopper is facing, get nodes
-		local face = minetest.get_node(pos).param2
+		local face = minetest_get_node(pos).param2
 		local front = {}
 		if face == 0 then
 			front = {x=pos.x-1,y=pos.y,z=pos.z}
@@ -441,13 +454,13 @@ minetest.register_abm({
 		local above = {x=pos.x,y=pos.y+1,z=pos.z}
 		local downpos = {x=pos.x,y=pos.y-1,z=pos.z}
 
-		local frontnode = minetest.get_node(front)
+		local frontnode = minetest_get_node(front)
 		if not minetest.registered_nodes[frontnode.name] then return end
 
 		-- Suck an item from the container above into the hopper
-		local abovenode = minetest.get_node(above)
+		local abovenode = minetest_get_node(above)
 		if not minetest.registered_nodes[abovenode.name] then return end
-		local g = get_item_group(abovenode.name, "container")
+		local g = minetest_get_item_group(abovenode.name, "container")
 		local sucked = mcl_util.move_item_container(above, pos)
 
 		-- Also suck in non-fuel items from furnace fuel slot
@@ -459,13 +472,13 @@ minetest.register_abm({
 		end
 
 		-- Try to move an item below before moving it sideways
-		local downnode = minetest.get_node(downpos)
+		local downnode = minetest_get_node(downpos)
 
         if minetest.registered_nodes[downnode.name] and
            mcl_util.move_item_container(pos, downpos) then return end
 
 		-- Move an item from the hopper into the container to which the hopper points to
-		local g = get_item_group(frontnode.name, "container")
+		local g = minetest_get_item_group(frontnode.name, "container")
 		if g == 2 or g == 3 or g == 5 or g == 6 then
 			mcl_util.move_item_container(pos, front)
 		elseif g == 4 then
@@ -503,7 +516,7 @@ minetest.register_lbm({
 	nodenames = { "group:hopper" },
 	run_at_every_load = false,
 	action = function(pos, node)
-		local meta = minetest.get_meta(pos)
+		local meta = minetest_get_meta(pos)
 		meta:set_string("formspec", mcl_hoppers_formspec)
 	end,
 })
