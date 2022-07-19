@@ -1,6 +1,7 @@
 local S = minetest.get_translator(minetest.get_current_modname())
 
 local math_abs = math.abs
+local mcl_util_move_item_container = mcl_util.move_item_container
 local minetest_facedir_to_dir = minetest.facedir_to_dir
 local minetest_get_inventory = minetest.get_inventory
 local minetest_get_item_group = minetest.get_item_group
@@ -382,7 +383,7 @@ minetest.register_abm({
 		local dst_node_name = dst_node.name
 		local dst_container_group = minetest_get_item_group(dst_node_name, "container")
 		if GROUPS_TO_PUT_INTO_COMMON_SLOT[dst_container_group] then
-			mcl_util.move_item_container(pos, dst_pos)
+			mcl_util_move_item_container(pos, dst_pos)
 		elseif GROUPS_TO_PUT_INTO_FUEL_SLOT[dst_container_group] then
 			local sinv = minetest_get_inventory({type="node", pos = pos})
 			local dinv = minetest_get_inventory({type="node", pos = dst_pos})
@@ -407,11 +408,11 @@ minetest.register_abm({
 		local above_container_group = minetest_get_item_group(above_node_name, "container")
 		if above_container_group ~= 0 then
 			-- Suck an item from the container above into the hopper
-			if not mcl_util.move_item_container(pos_above, pos)
+			if not mcl_util_move_item_container(pos_above, pos)
 			and above_container_group == 4 then
 				local finv = minetest_get_inventory({type="node", pos = pos_above})
 				if finv and not mcl_util.is_fuel(finv:get_stack("fuel", 1)) then
-					mcl_util.move_item_container(pos_above, pos, "fuel")
+					mcl_util_move_item_container(pos_above, pos, "fuel")
 				end
 			end
 		else
