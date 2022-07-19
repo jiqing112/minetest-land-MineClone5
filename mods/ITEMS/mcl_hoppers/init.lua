@@ -357,6 +357,7 @@ minetest.register_abm({
 		local above_node_name = above_node.name
 		if minetest_registered_items[above_node_name] and minetest_get_item_group(above_node_name, "container") == 0 then
 			-- Suck in dropped items
+			local y_top_touch_to_suck = y_above + 0.5
 			for _, object in pairs(minetest_get_objects_inside_radius(pos_above, 1)) do
 				if not object:is_player() then
 					local entity = object:get_luaentity()
@@ -368,10 +369,12 @@ minetest.register_abm({
 							-- This is the reason for the Y calculation.
 							-- Test: Items on farmland and slabs get sucked, but items on full blocks don't
 							local object_pos = object:get_pos()
-							local object_pos_miny = object_pos.y + object:get_properties().collisionbox[2]
-							if  (math_abs(object_pos.x    - x      ) <= 0.5)
-							and (math_abs(object_pos_miny - y_above) <= 0.5)
-							and (math_abs(object_pos.z    - z      ) <= 0.5)
+							local object_pos_y = object_pos.y
+							local object_collisionbox = object:get_properties().collisionbox
+							local touches_from_above = object_pos_y + object_collisionbox[2] <= y_top_touch_to_suck
+							if touches_from_above
+							and (math_abs(object_pos.x - x) <= 0.5)
+							and (math_abs(object_pos.z - z) <= 0.5)
 							then
 								object:remove()
 								inv:add_item("main", ItemStack(itemstring))
