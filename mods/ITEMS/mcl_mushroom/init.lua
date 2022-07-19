@@ -629,7 +629,7 @@ mcl_stairs.register_stair_and_slab_simple("crimson_hyphae_wood", "mcl_mushroom:c
 
 local barks = {
 	{ "warped", S("Warped Bark Stairs"), S("Warped Bark Slab"), S("Double Warped Bark Slab") },
-	{ "crimson", S("Crimson Bark Stairs"), S("Crimson Oak Bark Slab"), S("Double Crimson Bark Slab") },
+	{ "crimson", S("Crimson Bark Stairs"), S("Crimson Bark Slab"), S("Double Crimson Bark Slab") },
 }
 
 for b=1, #barks do
