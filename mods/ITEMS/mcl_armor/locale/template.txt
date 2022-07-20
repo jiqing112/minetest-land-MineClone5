@@ -6,21 +6,25 @@ Iron Helmet=
 Golden Helmet=
 Diamond Helmet=
 Chain Helmet=
+Netherite Helmet=
 Leather Tunic=
 Iron Chestplate=
 Golden Chestplate=
 Diamond Chestplate=
 Chain Chestplate=
+Netherite Chestplate=
 Leather Pants=
 Iron Leggings=
 Golden Leggings=
 Diamond Leggings=
 Chain Leggings=
+Netherite Leggings=
 Leather Boots=
 Iron Boots=
 Golden Boots=
 Diamond Boots=
 Chain Boots=
+Netherite Boots=
 Elytra=
 
 #Translations of enchantements
