@@ -1,4 +1,3 @@
-
 Inventory=
 Smoker=
 Cooks food faster than furnace=
