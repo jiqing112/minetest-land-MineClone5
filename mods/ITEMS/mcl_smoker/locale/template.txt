@@ -1,4 +1,4 @@
-#textdomain: mcl_smoker
+
 Inventory=
 Smoker=
 Cooks food faster than furnace=
