@@ -6,6 +6,6 @@ Strider=
 Fox=
 Cod=
 Salmon=
-dolphin=
+Dolphin=
 Glow Squid=
 Glow Ink Sac=
