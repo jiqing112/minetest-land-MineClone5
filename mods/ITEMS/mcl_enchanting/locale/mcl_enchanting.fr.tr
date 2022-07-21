@@ -84,7 +84,7 @@ Level requirement: @1=Niveau requis: @1
 '@1' is not a valid number='@1' n'est pas un nombre valide
 '@1' is not a valid number.='@1' n'est pas un nombre valide.
 <player> <enchantment> [<level>]=<joueur> <enchantement> [<niveau>]
-'@1' is not a valid number.='@1' n'est pas un nombre valide.
+@1 can't be combined with @2.=@1 ne peut être combiné avec @2.
 
 After finally selecting your enchantment; left-click on the selection, and you will see both the lapis lazuli and your experience levels consumed. And, an enchanted item left in its place.=Après sélection d'un enchantement ; cliquer gauche sur la sélection et vous verrez le lapis lazuli et les niveaux d'expérience consummés. Et, un objet enchanté à la place.
 
