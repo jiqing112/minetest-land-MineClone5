@@ -105,7 +105,6 @@ Place a tool, armor, weapon or book into the top left slot, and then place 1-3 L
 
 Player '@1' cannot be found.=
 Rightclick the Enchanting Table to open the enchanting menu.=
-Spend experience, and lapis to enchant various items.=
 
 The number you have entered (@1) is too big, it must be at most @2.=
 
