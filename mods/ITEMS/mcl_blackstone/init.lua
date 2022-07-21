@@ -245,16 +245,16 @@ minetest.register_node("mcl_blackstone:chain", {
 
 --slabs/stairs
 
-mcl_stairs.register_stair_and_slab_simple("blackstone", "mcl_blackstone:blackstone", "Blackstone Stair", "Blackstone Slab", "Double Blackstone Slab")
+mcl_stairs.register_stair_and_slab_simple("blackstone", "mcl_blackstone:blackstone", S("Blackstone Stair"), S("Blackstone Slab"), S("Double Blackstone Slab"))
 
 
-mcl_stairs.register_stair_and_slab_simple("blackstone_polished", "mcl_blackstone:blackstone_polished", "Polished Blackstone Stair", "Polished Blackstone Slab", "Polished Double Blackstone Slab")
+mcl_stairs.register_stair_and_slab_simple("blackstone_polished", "mcl_blackstone:blackstone_polished", S("Polished Blackstone Stair"), S("Polished Blackstone Slab"), S("Polished Double Blackstone Slab"))
 
 
-mcl_stairs.register_stair_and_slab_simple("blackstone_chiseled_polished", "mcl_blackstone:blackstone_chiseled_polished", "Polished Chiseled Blackstone Stair", "Chiseled Polished Blackstone Slab", "Double Polished Chiseled Blackstone Slab")
+mcl_stairs.register_stair_and_slab_simple("blackstone_chiseled_polished", "mcl_blackstone:blackstone_chiseled_polished", S("Polished Chiseled Blackstone Stair"), S("Chiseled Polished Blackstone Slab"), S("Double Polished Chiseled Blackstone Slab"))
 
 
-mcl_stairs.register_stair_and_slab_simple("blackstone_brick_polished", "mcl_blackstone:blackstone_brick_polished", "Polished Blackstone Brick Stair", "Polished Blackstone  Brick Slab", "Double Polished Blackstone Brick Slab")
+mcl_stairs.register_stair_and_slab_simple("blackstone_brick_polished", "mcl_blackstone:blackstone_brick_polished", S("Polished Blackstone Brick Stair"), S("Polished Blackstone Brick Slab"), S("Double Polished Blackstone Brick Slab"))
 
 --Wall
 
