@@ -56,11 +56,12 @@ Respiration=Apnée
 Riptide=Impulsion
 Sets target on fire.=Définit la cible en feu.
 Sharpness=Tranchant
+Shoot 3 arrows at the cost of one.=Tirez 3 flèches pour le prix d'une.
+Shooting consumes no regular arrows.=Le tir ne consomme pas de flèches standard.
 Silk Touch=Toucher de soie
 Smite=Châtiment
 Soul Speed=Agilité des âmes
 Sweeping Edge=Affilage
-
 Trident deals additional damage to ocean mobs.=Trident inflige des dégâts supplémentaires aux mobs océaniques.
 
 Trident launches player with itself when thrown. Works only in water or rain.=Le trident lance le joueur avec lui-même lorsqu'il est lancé. Fonctionne uniquement sous l'eau ou sous la pluie.
@@ -95,7 +96,8 @@ Enchanted Book=Livre enchanté
 Enchanting Table=Table d'enchantement
 
 Spend experience, and lapis to enchant various items.=Dépenser de l'expérience et du lapis pour enchanter des objets variés.
-Enchanting Tables will let you enchant armors, tools, weapons, and books with various abilities. But, at the cost of some experience, and lapis lazuli.=
+Enchanting Tables will let you enchant armors, tools, weapons, and books with various abilities. But, at the cost of some experience, and lapis lazuli.=Les tables d'enchantement vous permettent d'enchanter des armures, outils, armes et livres avec différents pouvoirs. Mais cela a un coût en expérience et en lapis lazuli.
+
 Enchanting succeded.=L'enchantement a réussi.
 Forcefully enchant an item=Enchantement forcé d'un objet
 
@@ -114,14 +116,18 @@ The target item is not enchantable.=L'objet cible n'est pas enchantable.
 There is no such enchantment '@1'.=Il n'y a pas un tel enchantement '@1'.
 
 These options are randomized, and dependent on experience level; but the enchantment strength can be increased.=Ces options sont aléatoires et dépendent du niveau d'expérience ; mais la force de l'enchantement peut être augmentée.
+
 To increase the enchantment strength, place bookshelves around the enchanting table. However, you will need to keep 1 air node between the table, & the bookshelves to empower the enchanting table.=Pour augmenter la force de l'enchantement, placer des bibliothèques autour de la table d'enchantement. Cependant il faut garder un bloc d'air entre la table et les bibliothèques pour renforcer l'enchantement.
 
 Usage: /enchant <player> <enchantment> [<level>]=Usage : /enchant <joueur> <enchantement> [<niveau>]
 Usage: /forceenchant <player> <enchantment> [<level>]=Usage : /forceenchant <joueur> <enchantement> [<niveau>]
 
+
 ##### not used anymore #####
+
 # textdomain: mcl_enchanting
 
+Aqua Affinity=Affinité aquatique
 Increases underwater mining speed.=Augmente la vitesse de minage sous-marine.
 Blast Protection=Protection contre les explosions
 Reduces explosion damage and knockback.=Réduit les dégâts d'explosion et de recul.
@@ -131,13 +137,9 @@ Feather Falling=Chute amortie
 Reduces fall damage.=Réduit les dégats de chute.
 Fire Protection=Protection contre le feu
 Reduces fire damage.=Reduit les dégats de feu.
-Shooting consumes no regular arrows.=Le tir ne consomme pas de flèches standard.
-Shoot 3 arrows at the cost of one.=Tirez sur 3 flèches au prix d'une.
 Projectile Protection=Protection contre les projectiles
 Reduces projectile damage.=Réduit les dommages causés par les projectiles.
 Protection=Protection
 Reduces most types of damage by 4% for each level.=Réduit la plupart des types de dégâts de 4% pour chaque niveau.
 Thorns=Épines
 Reflects some of the damage taken when hit, at the cost of reducing durability with each proc.=Reflète une partie des dégâts subis lors de la frappe, au prix d'une réduction de la durabilité à chaque déclenchement.
-Aqua Affinity=Affinité aquatique
-
