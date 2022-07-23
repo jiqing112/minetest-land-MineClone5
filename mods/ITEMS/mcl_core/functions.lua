@@ -9,7 +9,6 @@ local vector = vector
 local math_random = math.random
 local minetest_after = minetest.after
 local minetest_get_node = minetest.get_node
-local minetest_get_node_group = minetest.get_node_group
 local minetest_get_node_drops = minetest.get_node_drops
 local minetest_get_node_or_nil = minetest.get_node_or_nil
 local minetest_get_node_light = minetest.get_node_light
@@ -90,7 +89,7 @@ end
 
 function lava_spark_add(pos)
 	local node = minetest_get_node(pos)
-	if minetest_get_node_group(node.name, "lava") == 0 then return end
+	if minetest_get_item_group(node.name, "lava") == 0 then return end
 
 	local above = minetest_get_node(vector.new(pos.x, pos.y + 1, pos.z))
 	if above.name ~= "air" then return end
