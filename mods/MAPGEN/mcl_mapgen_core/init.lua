@@ -670,8 +670,8 @@ local function register_mgv6_decorations()
 			octaves = 3,
 			persist = 0.6
 		},
-		y_min = 4,
-		y_max = mcl_mapgen.overworld.max,
+		spawn_by = "air",
+		num_spawn_by = 8,
 		decoration = "mcl_core:cactus",
 		height = 1,
 		height_max = 3,

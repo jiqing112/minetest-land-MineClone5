@@ -82,7 +82,7 @@ mobs:register_mob("mobs_mc:sheep", {
 
 	--head code
 	has_head = true,
-	head_bone = "head",
+	head_bone = {"hea1", "hea2",},
 
 	swap_y_with_x = false,
 	reverse_head_yaw = false,

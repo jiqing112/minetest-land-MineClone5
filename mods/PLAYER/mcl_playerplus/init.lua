@@ -229,7 +229,6 @@ local function set_bone_position_conditional(player,b,p,r) --bone,position,rotat
 	end
 	player:set_bone_position(b,p,r)
 end
-
 minetest.register_globalstep(function(dtime)
 
 	time = time + dtime
@@ -284,10 +283,20 @@ minetest.register_globalstep(function(dtime)
 			elytra = mcl_playerplus.elytra[player]
 		end
 
-		elytra.active = player:get_inventory():get_stack("armor", 3):get_name() == "mcl_armor:elytra"
-			and not player:get_attach()
-			and (elytra.active or control.jump and player_velocity.y < -6)
-			and (fly_node == "air" or fly_node == "ignore")
+		elytra.inv = player:get_inventory():get_stack("armor", 3):get_name() == "mcl_armor:elytra"
+		elytra.enchanted = player:get_inventory():get_stack("armor", 3):get_name() == "mcl_armor:elytra_enchanted"
+		if not elytra.active then
+			elytra.active = player:get_inventory():get_stack("armor", 3):get_name() == "mcl_armor:elytra_enchanted" and not player:get_attach() and (elytra.active or control.jump and player_velocity.y < -6) and (fly_node == "air" or fly_node == "ignore") 
+			if not elytra.active then
+				elytra.active = player:get_inventory():get_stack("armor", 3):get_name() == "mcl_armor:elytra" and not player:get_attach() and (elytra.active or control.jump and player_velocity.y < -6) and (fly_node == "air" or fly_node == "ignore")
+			end
+		end
+		if not (fly_node == "air" or fly_node == "ignore") then		
+			elytra.active = false
+		end
+		if (not elytra.inv and not elytra.enchanted) then
+			elytra.active = false
+		end
 
 		if elytra.active then
 			mcl_player.player_set_animation(player, "fly")

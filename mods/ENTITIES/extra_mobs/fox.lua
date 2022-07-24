@@ -21,9 +21,11 @@ local S = minetest.get_translator("extra_mobs")
 local followitem = "mcl_farming:sweet_berry"
 
 local fox = {
-	type = "monster",
+	type = "animal",
 	passive = false,
 	spawn_class = "hostile",
+	skittish = true,
+	runaway = true,
 	hp_min = 10,
 	hp_max = 10,
 	xp_min = 1,
@@ -32,9 +34,20 @@ local fox = {
 	attack_type = "dogfight",
 	damage = 2,
 	reach = 1.5,
+	jump = true,
+	makes_footstep_sound = true,
+	walk_velocity = 3,
+	run_velocity = 6,
+	follow_velocity = 2,
+	follow = followitem,
+	pathfinding = 1,
+	fear_height = 4,
+	view_range = 16,
 	collisionbox = {-0.3, -0.01, -0.3, 0.3, 0.84, 0.3},
+	specific_attack = { "mobs_mc:chicken", "extra_mobs:cod", "extra_mobs:salmon" },
 	visual = "mesh",
 	mesh = "extra_mobs_fox.b3d",
+	rotate = 270,
 	textures = { {
 		"extra_mobs_fox.png",
 		"extra_mobs_trans.png",
@@ -42,10 +55,6 @@ local fox = {
 	visual_size = {x=3, y=3},
 	sounds = {
 	},
-	jump = true,
-	makes_footstep_sound = true,
-	walk_velocity = 3,
-	run_velocity = 6,
 	drops = {
 	},
 	animation = {
@@ -63,9 +72,9 @@ local fox = {
 		lay_start = 34,
 		lay_end = 34,
 	},
-	runaway = true,
 	on_spawn = function(self)
-		if minetest.find_node_near(self.object:get_pos(), 4, "mcl_core:snow") ~= nil or minetest.find_node_near(self.object:get_pos(), 4, "mcl_core:dirt_with_grass_snow") ~= nil then
+		if minetest.find_node_near(self.object:get_pos(), 4, "mcl_core:snow") ~= nil
+		or minetest.find_node_near(self.object:get_pos(), 4, "mcl_core:dirt_with_grass_snow") ~= nil then
 			self.object:set_properties({textures={"extra_mobs_artic_fox.png", "extra_mobs_trans.png"}})
 		end
 	end,
@@ -83,7 +92,11 @@ local fox = {
 			end)
 		end
 		for _,object in pairs(minetest.get_objects_inside_radius(self.object:get_pos(), 8)) do
-			if object and not object:is_player() and object:get_luaentity() and object:get_luaentity().name == "extra_mobs:fox" and self.state ~= "attack" and math.random(1, 500) == 1 then
+			if object
+			and not object:is_player()
+			and object:get_luaentity()
+			and object:get_luaentity().name == "extra_mobs:fox"
+			and self.state ~= "attack" and math.random(1, 500) == 1 then
 				 self.horny = true
 			end
 			local lp = object:get_pos()
@@ -93,15 +106,30 @@ local fox = {
 				y = lp.y - s.y,
 				z = lp.z - s.z
 			}
-			if object and object:is_player() and not object:get_player_control().sneak or not object:is_player() and object:get_luaentity() and object:get_luaentity().name == "mobs_mc:wolf" then
-				self.state = "runaway"
-				self.object:set_rotation({x=0,y=(atan(vec.z / vec.x) + 3 * pi / 2) - self.rotate,z=0})
-				if self.reach > vector.distance(self.object:get_pos(), object:get_pos()) and self.timer > .9 then
-					self.timer = 0
-					object:punch(self.object, 1.0, {
-						full_punch_interval = 1.0,
-						damage_groups = {fleshy = self.damage}
-					}, nil)
+			-- scare logic
+			if (object
+			and object:is_player()
+			and not object:get_player_control().sneak)
+			or (not object:is_player()
+			and object:get_luaentity()
+			and object:get_luaentity().name == "mobs_mc:wolf") then
+				-- don't keep setting it once it's set
+				if not self.state == "runaway" then
+					self.state = "runaway"
+					self.object:set_rotation({x=0,y=(atan(vec.z / vec.x) + 3 * pi / 2) - self.rotate,z=0})
+				end
+				-- if it is within a distance of the player or wolf
+				if 6 > vector.distance(self.object:get_pos(), object:get_pos()) then
+					self.timer = self.timer + 1
+					-- have some time before getting scared
+					if self.timer > 6 then
+						self.timer = 0
+						-- punch the fox for the player, but don't do any damage
+						self.object:punch(object, 0, {
+							full_punch_interval = 0,
+							damage_groups = {fleshy = 0}
+						}, nil)
+					end
 				end
 			end
 		end
@@ -109,10 +137,6 @@ local fox = {
 	do_punch = function(self)
 		self.state = "runaway"
 	end,
-	follow = followitem,
-	fear_height = 4,
-	view_range = 16,
-	specific_attack = { "mobs_mc:chicken", "extra_mobs:cod", "extra_mobs:salmon" },
 }
 
 mobs:register_mob("extra_mobs:fox", fox)
@@ -146,21 +170,21 @@ mobs:spawn_setup({
 --mobs:spawn_specific("extra_mobs:fox", "overworld", "ground", 0, minetest.LIGHT_MAX+1, 30, 6000, 3, 0, 500)
 --[[
 mobs:spawn_specific(
-"extra_mobs:artic_fox", 
-"overworld", 
-"ground", 
+"extra_mobs:artic_fox",
+"overworld",
+"ground",
 {
 "ColdTaiga",
 "IcePlainsSpikes",
 "IcePlains",
 "ExtremeHills+_snowtop",
 },
-0, 
-minetest.LIGHT_MAX+1, 
-30, 
-6000, 
-3, 
-mobs_mc.spawn_height.water, 
+0,
+minetest.LIGHT_MAX+1,
+30,
+6000,
+3,
+mobs_mc.spawn_height.water,
 mobs_mc.spawn_height.overworld_max)
 ]]--
 -- spawn eggs
