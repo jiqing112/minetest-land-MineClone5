@@ -11,7 +11,23 @@ else
 	ice_drawtype = "normal"
 	ice_texture_alpha = minetest.features.use_texture_alpha_string_modes and "opaque" or false
 end
-local mossnodes = {"mcl_core:stone", "mcl_core:granite", "mcl_core:granite_smooth", "mcl_core:diorite", "mcl_core:diorite_smooth", "mcl_core:andesite", "mcl_core:andesite_smooth", "mcl_deepslate:deepslate", --[[glowberries, ]]"mcl_core:dirt", "mcl_core:dirt_with_grass", "mcl_core:podzol", "mcl_core:coarse_dirt", "mcl_core:mycelium"}
+
+local moss_nodes = {
+	"mcl_core:stone",
+	"mcl_core:granite",
+	"mcl_core:granite_smooth",
+	"mcl_core:diorite",
+	"mcl_core:diorite_smooth",
+	"mcl_core:andesite",
+	"mcl_core:andesite_smooth",
+	"mcl_deepslate:deepslate",
+	--[[glowberries, ]]
+	"mcl_core:dirt",
+	"mcl_core:dirt_with_grass",
+	"mcl_core:podzol",
+	"mcl_core:coarse_dirt",
+	"mcl_core:mycelium",
+}
 
 mcl_core.fortune_drop_ore = {
 	discrete_uniform_distribution = true,
@@ -1089,7 +1105,9 @@ minetest.register_node("mcl_core:snowblock", {
 	_mcl_silk_touch_drop = true,
 })
 
-minetest.register_node("mcl_core:moss", {
+local MOSS_ITEMSTRING = "mcl_core:moss"
+local MOSS_NODE = {name = MOSS_ITEMSTRING}
+minetest.register_node(MOSS_ITEMSTRING, {
 	description = S("Moss"),
 	_doc_items_longdesc = S("A moss block is a natural block that can be spread to some other blocks by using bone meal."),--TODO: Other desciption?
 	_doc_items_hidden = false,
@@ -1101,41 +1119,41 @@ minetest.register_node("mcl_core:moss", {
 	_mcl_blast_resistance = 0.1,
 	_mcl_hardness = 0.1,
 	on_rightclick = function(pos, node, player, itemstack, pointed_thing)
-	if player:get_wielded_item():get_name() == "mcl_dye:white" then
-				if not minetest.is_creative_enabled(player) and not minetest.check_player_privs(player, "creative") then
-					itemstack:take_item()
-				end
-
-				for i, j in pairs(minetest.find_nodes_in_area_under_air({x = pos.x-1, y = pos.y-1, z = pos.z-1}, {x = pos.x+1, y = pos.y+1, z = pos.z+1}, mossnodes)) do
-					minetest.set_node(j, {name="mcl_core:moss"})
-				end
-				for i, j in pairs(minetest.find_nodes_in_area_under_air({x = pos.x-2, y = pos.y-1, z = pos.z-2}, {x = pos.x+2, y = pos.y+1, z = pos.z+2}, mossnodes)) do
-					if math.random(1,3) == 1 then minetest.set_node(j, {name="mcl_core:moss"}) end
-				end
-				for i, j in pairs(minetest.find_nodes_in_area_under_air({x = pos.x-3, y = pos.y-1, z = pos.z-3}, {x = pos.x+3, y = pos.y+1, z = pos.z+3}, mossnodes)) do
-					if math.random(1,9) == 1 then minetest.set_node(j, {name="mcl_core:moss"}) end
-				end
-				for i, j in pairs(minetest.find_nodes_in_area_under_air({x = pos.x-3, y = pos.y-1, z = pos.z-3}, {x = pos.x+3, y = pos.y+1, z = pos.z+3}, {"mcl_core:moss"})) do
-					if math.random(1,2) == 1 then
-						minetest.set_node({x=j.x,y=j.y+1,z=j.z} ,{name="mcl_flowers:tallgrass"})
-					end
-				end
-				for i, j in pairs(minetest.find_nodes_in_area_under_air({x = pos.x-3, y = pos.y-1, z = pos.z-3}, {x = pos.x+3, y = pos.y+1, z = pos.z+3}, {"mcl_core:moss"})) do
-					if math.random(1,4) == 1 then
-						minetest.set_node({x=j.x,y=j.y+1,z=j.z}, {name="mcl_core:moss_carpet"})
-					end
-				end
-				for i, j in pairs(minetest.find_nodes_in_area_under_air({x = pos.x-3, y = pos.y-1, z = pos.z-3}, {x = pos.x+3, y = pos.y+1, z = pos.z+3}, {"mcl_core:moss"})) do
-					if math.random(1,10) == 1 then
-						minetest.set_node({x=j.x,y=j.y+1,z=j.z} ,{name="mcl_flowers:double_grass"})
-						minetest.set_node({x=j.x,y=j.y+2,z=j.z} ,{name="mcl_flowers:double_grass_top"})
-					end
-				end
-			elseif minetest.registered_nodes[player:get_wielded_item():get_name()] then
+		local pos = pos
+		local x, y, z = pos.x, pos.y, pos.z
+		local player_wielded_item = player:get_wielded_item()
+		local item_name = player_wielded_item:get_name()
+		if item_name == "mcl_dye:white" then
+			if not minetest.is_creative_enabled(player) then
 				itemstack:take_item()
-				minetest.set_node(pointed_thing.above, {name=player:get_wielded_item():get_name()})
-	    end
-	  end,
+			end
+			for _, p in pairs(minetest.find_nodes_in_area_under_air({x=x-1, y=y-1, z=z-1}, {x=x+1, y=y+1, z=z+1}, moss_nodes)) do
+				minetest.set_node(p, MOSS_NODE)
+			end
+			for _, p in pairs(minetest.find_nodes_in_area_under_air({x=x-2, y=y-2, z=z-2}, {x=x+2, y=y+2, z=z+2}, moss_nodes)) do
+				if math.random(1,3) == 1 then minetest.set_node(p, MOSS_NODE) end
+			end
+			for _, p in pairs(minetest.find_nodes_in_area_under_air({x=x-3, y=y-3, z=z-3}, {x=x+3, y=y+3, z=z+3}, moss_nodes)) do
+				if math.random(1,9) == 1 then minetest.set_node(p, MOSS_NODE) end
+			end
+			for _, p in pairs(minetest.find_nodes_in_area_under_air({x=x-3, y=y-3, z=z-3}, {x=x+3, y=y+3, z=z+3}, {MOSS_ITEMSTRING})) do
+				if math.random(1,2) == 1 then
+					minetest.set_node({x=p.x, y=p.y+1, z=p.z}, {name="mcl_flowers:tallgrass"})
+				elseif math.random(1,4) == 1 then
+					minetest.set_node({x=p.x, y=p.y+1, z=p.z}, {name="mcl_core:moss_carpet"})
+				elseif math.random(1,10) == 1 then
+					minetest.set_node({x=p.x, y=p.y+1, z=p.z}, {name="mcl_flowers:double_grass"})
+					minetest.set_node({x=p.x, y=p.y+2, z=p.z}, {name="mcl_flowers:double_grass_top"})
+				end
+			end
+		elseif minetest.registered_nodes[item_name] then
+			if not minetest.is_creative_enabled(player) then
+				itemstack:take_item()
+			end
+			local set_pos = pointed_thing and pointed_thing.above or {x = pos.x, y = pos.y + 1, z = pos.z}
+			minetest.set_node(set_pos, {name = item_name})
+		end
+	end,
 })
 
 minetest.register_node("mcl_core:moss_carpet", {
