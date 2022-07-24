@@ -105,7 +105,6 @@ Place a tool, armor, weapon or book into the top left slot, and then place 1-3 L
 
 Player '@1' cannot be found.=
 Rightclick the Enchanting Table to open the enchanting menu.=
-Spend experience, and lapis to enchant various items.=
 
 The number you have entered (@1) is too big, it must be at most @2.=
 
@@ -127,4 +126,20 @@ Usage: /forceenchant <player> <enchantment> [<level>]=
 ##### not used anymore #####
 
 # textdomain: mcl_enchanting
+
 Aqua Affinity=
+Increases underwater mining speed.=
+Blast Protection=
+Reduces explosion damage and knockback.=
+Curse of Binding=Malédiction du lien éternel
+Item cannot be removed from armor slots except due to death, breaking or in Creative Mode.=
+Feather Falling=
+Reduces fall damage.=
+Fire Protection=
+Reduces fire damage.=
+Projectile Protection=
+Reduces projectile damage.=
+Protection=
+Reduces most types of damage by 4% for each level.=
+Thorns=
+Reflects some of the damage taken when hit, at the cost of reducing durability with each proc.=

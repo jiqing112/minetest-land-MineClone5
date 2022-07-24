@@ -3,7 +3,7 @@ local minetest_get_objects_inside_radius = minetest.get_objects_inside_radius
 local vector = vector
 
 --check to see if someone nearby has some tasty food
-mobs.check_following = function(self) -- returns true or false
+mobs.check_following = function(self, dtime) -- returns true or false
     --ignore
     if not self.follow then
         self.following_person = nil
@@ -15,6 +15,7 @@ mobs.check_following = function(self) -- returns true or false
 
     --check if the follower is a player incase they log out
     if follower and follower:is_player() then
+	mobs.do_head_logic(self, dtime, follower)
         local stack = follower:get_wielded_item()
         --safety check
         if not stack then

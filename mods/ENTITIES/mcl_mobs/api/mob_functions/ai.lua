@@ -88,7 +88,7 @@ local function land_state_switch(self, dtime)
 	end
 
 	--ignore everything else if following
-	if mobs.check_following(self) and
+	if mobs.check_following(self, dtime) and
 	(not self.breed_lookout_timer or (self.breed_lookout_timer and self.breed_lookout_timer == 0)) and
 	(not self.breed_timer or (self.breed_timer and self.breed_timer == 0)) then
 		self.state = "follow"
@@ -984,7 +984,7 @@ function mobs.mob_step(self, dtime)
 
 		--go get the closest player
 		if attacking then
-
+			mobs.do_head_logic(self, dtime, attacking)
 			self.memory = 6 --6 seconds of memory
 
 			--set initial punch timer
@@ -1040,6 +1040,7 @@ function mobs.mob_step(self, dtime)
 		--don't break eye contact
 		if self.hostile and self.attacking then
 			mobs.set_yaw_while_attacking(self)
+			mobs.do_head_logic(self, dtime, self.attacking)
 		end
 
 		--perfectly reset pause_timer
