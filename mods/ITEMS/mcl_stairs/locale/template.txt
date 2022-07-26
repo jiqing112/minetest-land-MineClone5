@@ -25,6 +25,7 @@ Double Dark Oak Wood Slab=
 Stone Stairs=
 Stone Slab=
 Double Stone Slab=
+Polished Stone Stairs=
 Polished Stone Slab=
 Double Polished Stone Slab=
 Andesite Stairs=

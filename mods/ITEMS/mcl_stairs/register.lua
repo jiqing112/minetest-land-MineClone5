@@ -32,6 +32,12 @@ end
 
 mcl_stairs.register_stair_and_slab_simple("stone_rough", "mcl_core:stone", S("Stone Stairs"), S("Stone Slab"), S("Double Stone Slab"))
 
+mcl_stairs.register_stair("stone", "mcl_core:stone_smooth",
+		{pickaxey=1, material_stone=1},
+		{"mcl_stairs_stone_slab_top.png", "mcl_stairs_stone_slab_top.png", "mcl_stairs_stone_slab_side.png"},
+		S("Polished Stone Stairs"),
+		mcl_sounds.node_sound_stone_defaults(), 0.8, 0.8,
+		nil, "mcl_core:stone_smooth")
 mcl_stairs.register_slab("stone", "mcl_core:stone_smooth",
 		{pickaxey=1, material_stone=1},
 		{"mcl_stairs_stone_slab_top.png", "mcl_stairs_stone_slab_top.png", "mcl_stairs_stone_slab_side.png"},
