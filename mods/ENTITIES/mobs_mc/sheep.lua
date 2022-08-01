@@ -82,16 +82,16 @@ mobs:register_mob("mobs_mc:sheep", {
 
 	--head code
 	has_head = true,
-	head_bone = {"hea1", "hea2",},
+	head_bone = "head",
 
 	swap_y_with_x = false,
 	reverse_head_yaw = false,
 
-	head_bone_pos_y = 3.6,
-	head_bone_pos_z = -0.6,
+	head_bone_pos_y = 0,
+	head_bone_pos_z = 0,
 
-	head_height_offset = 1.0525,
-	head_direction_offset = 0.5,
+	head_height_offset = 1.2,
+	head_direction_offset = 0,
 	head_pitch_modifier = 0,
 	--end head code
 
@@ -117,7 +117,7 @@ mobs:register_mob("mobs_mc:sheep", {
 	},
 	animation = {
 		speed_normal = 25,	run_speed = 65,
-		stand_start = 40,	stand_end = 80,
+		stand_start = 0,	stand_end = 0,
 		walk_start = 0,		walk_end = 40,
 		run_start = 0,		run_end = 40,
 	},
@@ -330,6 +330,24 @@ mobs:register_mob("mobs_mc:sheep", {
 			return false
 		end
 	end,
+	on_spawn = function(self)
+		if self.baby then
+			self.animation = table.copy(self.animation)
+			self.animation.stand_start = 81
+			self.animation.stand_end = 81
+			self.animation.walk_start = 81
+			self.animation.walk_end = 121
+			self.animation.run_start = 81
+			self.animation.run_end = 121
+		end
+		return true
+	end,
+	on_grown = function(self)
+		self.animation = nil
+		local anim = self.current_animation
+		self.current_animation = nil -- Mobs Redo does nothing otherwise
+		mobs.set_mob_animation(self, anim)
+	end
 })
 mobs:spawn_specific(
 "mobs_mc:sheep",
