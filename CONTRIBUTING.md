@@ -31,6 +31,12 @@ Refer to [Minetest Lua API](https://github.com/minetest/minetest/blob/master/doc
 
 Follow [Lua code style guidelines](https://dev.minetest.net/Lua_code_style_guidelines). Use tabs, not spaces for indentation (tab size = 8). Never use `minetest.env`.
 
+If you do a translation, try detecting translational issues with `check_translate_files.py` - just run it from tools folder:
+```bash
+# python3 check_translate_files.py fr | less
+```
+(`fr` is a language code)
+
 Check your code works as expected.
 
 Commit & push your changes to a new branch (not master, one change per a branch).

@@ -229,7 +229,6 @@ local function set_bone_position_conditional(player,b,p,r) --bone,position,rotat
 	end
 	player:set_bone_position(b,p,r)
 end
-
 minetest.register_globalstep(function(dtime)
 
 	time = time + dtime
@@ -255,7 +254,7 @@ minetest.register_globalstep(function(dtime)
 		local wielded_def = wielded:get_definition()
 
 		local c_x, c_y = unpack(player_collision(player))
-
+		
 		--[[
 		if player_velocity.x + player_velocity.y < .5 and c_x + c_y > 0 then
 			local add_velocity = player.add_player_velocity or player.add_velocity
@@ -278,11 +277,20 @@ minetest.register_globalstep(function(dtime)
 		local fly_pos = player:get_pos()
 		local fly_node = minetest.get_node({x = fly_pos.x, y = fly_pos.y - 0.5, z = fly_pos.z}).name
 		local elytra = mcl_playerplus.elytra[name]
-
-		elytra.active = player:get_inventory():get_stack("armor", 3):get_name() == "mcl_armor:elytra"
-			and not player:get_attach()
-			and (elytra.active or control.jump and player_velocity.y < -6)
-			and (fly_node == "air" or fly_node == "ignore")
+		elytra.inv = player:get_inventory():get_stack("armor", 3):get_name() == "mcl_armor:elytra"
+		elytra.enchanted = player:get_inventory():get_stack("armor", 3):get_name() == "mcl_armor:elytra_enchanted"
+		if not elytra.active then
+			elytra.active = player:get_inventory():get_stack("armor", 3):get_name() == "mcl_armor:elytra_enchanted" and not player:get_attach() and (elytra.active or control.jump and player_velocity.y < -6) and (fly_node == "air" or fly_node == "ignore") 
+			if not elytra.active then
+				elytra.active = player:get_inventory():get_stack("armor", 3):get_name() == "mcl_armor:elytra" and not player:get_attach() and (elytra.active or control.jump and player_velocity.y < -6) and (fly_node == "air" or fly_node == "ignore")
+			end
+		end
+		if not (fly_node == "air" or fly_node == "ignore") then		
+			elytra.active = false
+		end
+		if (not elytra.inv and not elytra.enchanted) then
+			elytra.active = false
+		end
 
 		if elytra.active then
 			mcl_player.player_set_animation(player, "fly")
@@ -324,15 +332,17 @@ minetest.register_globalstep(function(dtime)
 		end
 
 		if wielded_def and wielded_def._mcl_toollike_wield then
-			set_bone_position_conditional(player,"Wield_Item", vector.new(0,3.9,1.3), vector.new(90,0,0))
+			set_bone_position_conditional(player,"Wield_Item", vector.new(0,4.7,3.1), vector.new(-90,225,90))
 		elseif string.find(wielded:get_name(), "mcl_bows:bow") then
-			set_bone_position_conditional(player,"Wield_Item", vector.new(.5,4.5,-1.6), vector.new(90,0,20))
+			set_bone_position_conditional(player,"Wield_Item", vector.new(1,4,0), vector.new(90,130,115))
 		elseif string.find(wielded:get_name(), "mcl_bows:crossbow_loaded") then
-			set_bone_position_conditional(player,"Wield_Item", vector.new(-1.5,5.7,1.8), vector.new(64,90,0))
+			set_bone_position_conditional(player,"Wield_Item", vector.new(0,5.2,1.2), vector.new(0,180,73))
 		elseif string.find(wielded:get_name(), "mcl_bows:crossbow") then
-			set_bone_position_conditional(player,"Wield_Item", vector.new(-1.5,5.7,1.8), vector.new(90,90,0))
+			set_bone_position_conditional(player,"Wield_Item", vector.new(0,5.2,1.2), vector.new(0,180,45))
+		elseif wielded_def.inventory_image == "" then
+			set_bone_position_conditional(player,"Wield_Item", vector.new(0,6,2), vector.new(180,-45,0))
 		else
-			set_bone_position_conditional(player,"Wield_Item", vector.new(-1.5,4.9,1.8), vector.new(135,0,90))
+			set_bone_position_conditional(player,"Wield_Item", vector.new(0,5.3,2), vector.new(90,0,0))
 		end
 
 		-- controls right and left arms pitch when shooting a bow or blocking

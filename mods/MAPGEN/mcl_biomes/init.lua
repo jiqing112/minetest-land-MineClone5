@@ -8,6 +8,8 @@ local generate_fallen_logs = minetest.settings:get_bool("mcl_generate_fallen_log
 local mod_mcl_structures = minetest.get_modpath("mcl_structures")
 local mod_mcl_core = minetest.get_modpath("mcl_core")
 local mod_mcl_mushrooms = minetest.get_modpath("mcl_mushrooms")
+local mod_mcl_mushroom = minetest.get_modpath("mcl_mushroom")
+local mod_mcl_blackstone = minetest.get_modpath("mcl_blackstone")
 
 -- Jungle bush schematic. In PC/Java Edition it's Jungle Wood + Oak Leaves
 local jungle_bush_schematic = mod_mcl_core.."/schematics/mcl_core_jungle_bush_oak_leaves.mts"
@@ -21,6 +23,10 @@ local deco_id_chorus_plant
 local OCEAN_MIN = -15
 local DEEP_OCEAN_MAX = OCEAN_MIN - 1
 local DEEP_OCEAN_MIN = -31
+
+local minetest_get_perlin = minetest.get_perlin
+local math_floor = math.floor
+local math_abs = math.abs
 
 --[[ Special biome field: _mcl_biome_type:
 Rough categorization of biomes: One of "snowy", "cold", "medium" and "hot"
@@ -1478,6 +1484,12 @@ end
 
 -- Register biomes of non-Overworld biomes
 local function register_dimension_biomes()
+	--mcl2 schematic compat
+	minetest.register_alias("mcl_crimson:warped_wart_block", "mcl_mushroom:warped_wart_block")
+	minetest.register_alias("mcl_crimson:warped_hyphae", "mcl_mushroom:warped_hyphae")
+	minetest.register_alias("mcl_crimson:shroomlight", "mcl_mushroom:shroomlight")
+	minetest.register_alias("mcl_crimson:crimson_hyphae", "mcl_mushroom:crimson_hyphae")
+
 	--[[ REALMS ]]
 
 	--[[ THE NETHER ]]
@@ -1489,14 +1501,183 @@ local function register_dimension_biomes()
 		node_river_water = "air",
 		node_cave_liquid = "air",
 		y_min = mcl_mapgen.nether.min,
-		-- FIXME: For some reason the Nether stops generating early if this constant is not added.
-		-- Figure out why.
+
 		y_max = mcl_mapgen.nether.max + 80,
 		heat_point = 100,
 		humidity_point = 0,
 		_mcl_biome_type = "hot",
 		_mcl_palette_index = 17,
 	})
+
+	minetest.register_decoration({
+		deco_type = "simple",
+		place_on = {"mcl_nether:netherrack","mcl_nether:glowstone","mcl_blackstone:nether_gold","mcl_nether:quartz_ore","mcl_core:gravel","mcl_nether:soul_sand"},
+		sidelen = 16,
+		fill_ratio = 10,
+		biomes = { "Nether" },
+		y_min = -31000,
+		y_max = mcl_mapgen.nether.max,
+		decoration = "mcl_nether:netherrack",
+		flags = "all_floors",
+		param2 = 0,
+	})
+
+	minetest.register_biome({
+		name = "SoulsandValley",
+		node_filler = "mcl_nether:netherrack",
+		node_stone = "mcl_nether:netherrack",
+		node_top = "mcl_blackstone:soul_soil",
+		node_water = "air",
+		node_river_water = "air",
+		node_cave_liquid = "air",
+		y_min = mcl_mapgen.nether.min,
+
+		y_max = mcl_mapgen.nether.max + 80,
+		heat_point = 77,
+		humidity_point = 33,
+		_mcl_biome_type = "hot",
+		_mcl_palette_index = 17,
+	})
+	minetest.register_decoration({
+		deco_type = "simple",
+		place_on = {"mcl_nether:netherrack","mcl_nether:glowstone"},
+		sidelen = 16,
+		fill_ratio = 10,
+		biomes = { "SoulsandValley" },
+		y_min = -31000,
+		y_max = mcl_mapgen.nether.max,
+		decoration = "mcl_blackstone:soul_soil",
+		flags = "all_floors, all_ceilings",
+		param2 = 0,
+	})
+
+	minetest.register_ore({
+		ore_type       = "blob",
+		ore            = "mcl_nether:soul_sand",
+		wherein        = { "mcl_nether:netherrack", "mcl_blackstone:soul_soil" },
+		clust_scarcity = 100,
+		clust_num_ores = 225,
+		clust_size     = 15,
+		biomes = { "SoulsandValley" },
+		y_min = mcl_mapgen.nether.min,
+		y_max = mcl_mapgen.nether.max + 80,
+		noise_params = {
+			offset  = 0,
+			scale   = 1,
+			spread  = { x = 250, y = 250, z = 250 },
+			seed    = 12345,
+			octaves = 3,
+			persist = 0.6,
+			lacunarity = 2,
+			flags = "defaults",
+		}
+	})
+	minetest.register_biome({
+		name = "CrimsonForest",
+		node_filler = "mcl_nether:netherrack",
+		node_stone = "mcl_nether:netherrack",
+		node_top = "mcl_mushroom:crimson_nylium",
+		node_water = "air",
+		node_river_water = "air",
+		node_cave_liquid = "air",
+		y_min = mcl_mapgen.nether.min,
+
+		y_max = mcl_mapgen.nether.max + 80,
+		heat_point = 60,
+		humidity_point = 47,
+		_mcl_biome_type = "hot",
+		_mcl_palette_index = 17,
+	})
+	minetest.register_decoration({
+		deco_type = "simple",
+		place_on = {"mcl_nether:netherrack","mcl_nether:glowstone","mcl_blackstone:nether_gold","mcl_nether:quartz_ore","mcl_core:gravel","mcl_nether:soul_sand"},
+		sidelen = 16,
+		fill_ratio = 10,
+		biomes = { "CrimsonForest" },
+		y_min = -31000,
+		y_max = mcl_mapgen.nether.max,
+		decoration = "mcl_mushroom:crimson_nylium",
+		flags = "all_floors",
+		param2 = 0,
+	})
+	minetest.register_biome({
+		name = "WarpedForest",
+		node_filler = "mcl_nether:netherrack",
+		node_stone = "mcl_nether:netherrack",
+		node_top = "mcl_mushroom:warped_nylium",
+		node_water = "air",
+		node_river_water = "air",
+		node_cave_liquid = "air",
+		y_min = mcl_mapgen.nether.min,
+		y_max = mcl_mapgen.nether.max + 80,
+		heat_point = 37,
+		humidity_point = 70,
+		_mcl_biome_type = "hot",
+		_mcl_palette_index = 17,
+	})
+	minetest.register_decoration({
+		deco_type = "simple",
+		place_on = {"mcl_nether:netherrack","mcl_nether:glowstone","mcl_blackstone:nether_gold","mcl_nether:quartz_ore","mcl_core:gravel","mcl_nether:soul_sand"},
+		sidelen = 16,
+		fill_ratio = 10,
+		biomes = { "WarpedForest" },
+		y_min = -31000,
+		y_max = mcl_mapgen.nether.max,
+		decoration = "mcl_mushroom:warped_nylium",
+		flags = "all_floors",
+		param2 = 0,
+	})
+	minetest.register_biome({
+		name = "BasaltDelta",
+		node_filler = "mcl_nether:netherrack",
+		node_stone = "mcl_nether:netherrack",
+		node_top = "mcl_blackstone:basalt",
+		node_water = "air",
+		node_river_water = "air",
+		node_cave_liquid = "air",
+		y_min = mcl_mapgen.nether.min,
+		y_max = mcl_mapgen.nether.max + 80,
+		heat_point = 27,
+		humidity_point = 80,
+		_mcl_biome_type = "hot",
+		_mcl_palette_index = 17,
+	})
+
+	minetest.register_ore({
+	ore_type       = "blob",
+	ore            = "mcl_blackstone:blackstone",
+	wherein        =  {"mcl_nether:netherrack","mcl_nether:glowstone","mcl_core:gravel","mcl_nether:soul_sand"},
+	clust_scarcity = 100,
+	clust_num_ores = 400,
+	clust_size     = 20,
+	biomes = { "BasaltDelta" },
+	y_min = mcl_mapgen.nether.min,
+	y_max = mcl_mapgen.nether.max + 80,
+	noise_params = {
+		offset  = 0,
+		scale   = 1,
+		spread  = { x = 250, y = 250, z = 250 },
+		seed    = 12345,
+		octaves = 3,
+		persist = 0.6,
+		lacunarity = 2,
+		flags = "defaults",
+	}
+	})
+
+	minetest.register_decoration({
+		deco_type = "simple",
+		place_on = {"mcl_nether:netherrack","mcl_nether:glowstone","mcl_blackstone:nether_gold","mcl_nether:quartz_ore","mcl_core:gravel","mcl_nether:soul_sand","mcl_blackstone:blackstone"},
+		sidelen = 16,
+		fill_ratio = 10,
+		biomes = { "BasaltDelta" },
+		y_min = -31000,
+		y_max = mcl_mapgen.nether.max,
+		decoration = "mcl_blackstone:basalt",
+		flags = "all_floors",
+		param2 = 0,
+	})
+
 
 	--[[ THE END ]]
 	minetest.register_biome({
@@ -3041,8 +3222,8 @@ local function register_decorations()
 			octaves = 3,
 			persist = 0.6
 		},
-		y_min = 4,
-		y_max = mcl_mapgen.overworld.max,
+		spawn_by = "air",
+		num_spawn_by = 8,
 		decoration = "mcl_core:cactus",
 		biomes = {"Desert",
 			"Mesa","Mesa_sandlevel",
@@ -3922,9 +4103,343 @@ local function register_decorations()
 end
 
 -- Decorations in non-Overworld dimensions
+
+local chorus_noise_params = {
+	offset = -0.012,
+	scale = 0.024,
+	spread = {x = 100, y = 100, z = 100},
+	seed = 257,
+	octaves = 3,
+	persistence = 0.6,
+}
+
 local function register_dimension_decorations()
 	--[[ NETHER ]]
-	-- TODO: Nether
+	--NETHER WASTES (Nether)
+	minetest.register_decoration({
+		deco_type = "simple",
+		place_on = {"mcl_nether:netherrack","mcl_nether:magma"},
+		sidelen = 16,
+		fill_ratio = 0.04,
+		biomes = {"Nether"},
+		y_min = mcl_mapgen.nether.lava_max + 1,
+		y_max = mcl_mapgen.nether.max  - 1,
+		flags = "all_floors",
+		decoration = "mcl_fire:eternal_fire",
+	})
+	minetest.register_decoration({
+		deco_type = "simple",
+		place_on = {"mcl_nether:netherrack"},
+		sidelen = 16,
+		fill_ratio = 0.013,
+		biomes = {"Nether"},
+		y_min = mcl_mapgen.nether.lava_max + 1,
+		y_max = mcl_mapgen.nether.max  - 1,
+		flags = "all_floors",
+		decoration = "mcl_mushrooms:mushroom_brown",
+	})
+	minetest.register_decoration({
+		deco_type = "simple",
+		place_on = {"mcl_nether:netherrack"},
+		sidelen = 16,
+		fill_ratio = 0.012,
+		biomes = {"Nether"},
+		y_min = mcl_mapgen.nether.lava_max + 1,
+		y_max = mcl_mapgen.nether.max  - 1,
+		flags = "all_floors",
+		decoration = "mcl_mushrooms:mushroom_red",
+	})
+	minetest.register_decoration({
+		deco_type = "simple",
+		place_on = {"mcl_nether:soul_sand"},
+		sidelen = 16,
+		fill_ratio = 0.0032,
+		biomes = {"Nether","SoulsandValley"},
+		y_min = mcl_mapgen.nether.lava_max + 1,
+		y_max = mcl_mapgen.nether.max  - 1,
+		flags = "all_floors",
+		decoration = "mcl_nether:nether_wart",
+	})
+
+	-- WARPED FOREST
+	minetest.register_decoration({
+		deco_type = "simple",
+		place_on = {"mcl_mushroom:warped_nylium"},
+		sidelen = 16,
+		fill_ratio = 0.02,
+		biomes = {"WarpedForest"},
+		y_min = mcl_mapgen.nether.lava_max + 1,
+		y_max = mcl_mapgen.nether.max  - 10,
+		flags = "all_floors",
+		decoration = "mcl_mushroom:warped_fungus",
+	})
+	minetest.register_decoration({
+		deco_type = "schematic",
+		name = "mcl_biomes:warped_tree1",
+		place_on = {"mcl_mushroom:warped_nylium"},
+		sidelen = 16,
+		fill_ratio = 0.007,
+		biomes = {"WarpedForest"},
+		y_min = mcl_mapgen.nether.lava_max + 1,
+		y_max = mcl_mapgen.nether.max - 15,
+		flags = "all_floors, place_center_x, place_center_z",
+		schematic = mod_mcl_mushroom.."/schematics/warped_fungus_1.mts",
+		size = {x = 5, y = 11, z = 5},
+		rotation = "random",
+	})
+	minetest.register_decoration({
+		deco_type = "schematic",
+		name = "mcl_biomes:warped_tree2",
+		place_on = {"mcl_mushroom:warped_nylium"},
+		sidelen = 16,
+		fill_ratio = 0.005,
+		biomes = {"WarpedForest"},
+		y_min = mcl_mapgen.nether.lava_max + 1,
+		y_max = mcl_mapgen.nether.max - 10,
+		flags = "all_floors, place_center_x, place_center_z",
+		schematic = mod_mcl_mushroom.."/schematics/warped_fungus_2.mts",
+		size = {x = 5, y = 6, z = 5},
+		rotation = "random",
+	})
+	minetest.register_decoration({
+		deco_type = "schematic",
+		name = "mcl_biomes:warped_tree3",
+		place_on = {"mcl_mushroom:warped_nylium"},
+		sidelen = 16,
+		fill_ratio = 0.03,
+		biomes = {"WarpedForest"},
+		y_min = mcl_mapgen.nether.lava_max + 1,
+		y_max = mcl_mapgen.nether.max - 14,
+		flags = "all_floors, place_center_x, place_center_z",
+		schematic = mod_mcl_mushroom.."/schematics/warped_fungus_3.mts",
+		size = {x = 5, y = 12, z = 5},
+		rotation = "random",
+	})
+	minetest.register_decoration({
+		deco_type = "simple",
+		place_on = {"mcl_mushroom:warped_nylium","mcl_mushroom:twisting_vines"},
+		sidelen = 16,
+		fill_ratio = 0.012,
+		biomes = {"WarpedForest"},
+		y_min = mcl_mapgen.nether.lava_max + 1,
+		flags = "all_floors",
+		height = 2,
+		height_max = 8,
+		decoration = "mcl_mushroom:twisting_vines",
+	})
+	minetest.register_decoration({
+		deco_type = "simple",
+		place_on = {"mcl_mushroom:warped_nylium"},
+		sidelen = 16,
+		fill_ratio = 0.0812,
+		biomes = {"WarpedForest"},
+		y_min = mcl_mapgen.nether.lava_max + 1,
+		flags = "all_floors",
+		max_height = 5,
+		decoration = "mcl_mushroom:warped_roots",
+	})
+	minetest.register_decoration({
+		deco_type = "simple",
+		place_on = {"mcl_mushroom:crimson_nylium"},
+		sidelen = 16,
+		fill_ratio = 0.052,
+		biomes = {"WarpedForest"},
+		y_min = mcl_mapgen.nether.lava_max + 1,
+		flags = "all_floors",
+		decoration = "mcl_mushroom:nether_sprouts",
+	})
+	-- CRIMSON FOREST
+	minetest.register_decoration({
+		deco_type = "simple",
+		place_on = {"mcl_mushroom:crimson_nylium"},
+		sidelen = 16,
+		fill_ratio = 0.02,
+		biomes = {"CrimsonForest"},
+		y_min = mcl_mapgen.nether.lava_max + 1,
+		y_max = mcl_mapgen.nether.lava_max  - 10,
+		flags = "all_floors",
+		decoration = "mcl_mushroom:crimson_fungus",
+	})
+	minetest.register_decoration({
+		deco_type = "schematic",
+		name = "mcl_biomes:crimson_tree",
+		place_on = {"mcl_mushroom:crimson_nylium"},
+		sidelen = 16,
+		fill_ratio = 0.008,
+		biomes = {"CrimsonForest"},
+		y_min = mcl_mapgen.nether.lava_max + 1,
+		y_max = mcl_mapgen.nether.max - 10,
+		flags = "all_floors, place_center_x, place_center_z",
+		schematic = mod_mcl_mushroom.."/schematics/crimson_fungus_1.mts",
+		size = {x = 5, y = 8, z = 5},
+		rotation = "random",
+	})
+	minetest.register_decoration({
+		deco_type = "schematic",
+		name = "mcl_biomes:crimson_tree2",
+		place_on = {"mcl_mushroom:crimson_nylium"},
+		sidelen = 16,
+		fill_ratio = 0.006,
+		biomes = {"CrimsonForest"},
+		y_min = mcl_mapgen.nether.lava_max + 1,
+		y_max = mcl_mapgen.nether.max - 15,
+		flags = "all_floors, place_center_x, place_center_z",
+		schematic = mod_mcl_mushroom.."/schematics/crimson_fungus_2.mts",
+		size = {x = 5, y = 12, z = 5},
+		rotation = "random",
+	})
+	minetest.register_decoration({
+		deco_type = "schematic",
+		name = "mcl_biomes:crimson_tree3",
+		place_on = {"mcl_mushroom:crimson_nylium"},
+		sidelen = 16,
+		fill_ratio = 0.004,
+		biomes = {"CrimsonForest"},
+		y_min = mcl_mapgen.nether.lava_max + 1,
+		y_max = mcl_mapgen.nether.max - 20,
+		flags = "all_floors, place_center_x, place_center_z",
+		schematic = mod_mcl_mushroom.."/schematics/crimson_fungus_3.mts",
+		size = {x = 7, y = 13, z = 7},
+		rotation = "random",
+	})
+	minetest.register_decoration({
+		deco_type = "simple",
+		place_on = {"mcl_mushroom:crimson_nylium"},
+		sidelen = 16,
+		fill_ratio = 0.082,
+		biomes = {"CrimsonForest"},
+		y_min = mcl_mapgen.nether.lava_max + 1,
+		flags = "all_floors",
+		max_height = 5,
+		decoration = "mcl_mushroom:crimson_roots",
+	})
+
+	--SOULSAND VALLEY
+	minetest.register_decoration({
+		deco_type = "simple",
+		place_on = {"mcl_blackstone:soul_soil","mcl_nether:soul_sand"},
+		sidelen = 16,
+		fill_ratio = 0.062,
+		biomes = {"SoulsandValley"},
+		y_min = mcl_mapgen.nether.lava_max + 1,
+		flags = "all_floors",
+		max_height = 5,
+		decoration = "mcl_blackstone:soul_fire",
+	})
+	minetest.register_decoration({
+		deco_type = "schematic",
+		place_on = {"mcl_blackstone:soul_soil","mcl_nether:soulsand"},
+		sidelen = 16,
+		fill_ratio = 0.000212,
+		biomes = {"SoulsandValley"},
+		y_min = mcl_mapgen.nether.lava_max + 1,
+		flags = "all_floors, place_center_x, place_center_z",
+		schematic = mod_mcl_blackstone.."/schematics/mcl_blackstone_nether_fossil_1.mts",
+		size = {x = 5, y = 8, z = 5},
+		rotation = "random",
+	})
+	minetest.register_decoration({
+		deco_type = "schematic",
+		place_on = {"mcl_blackstone:soul_soil","mcl_nether:soulsand"},
+		sidelen = 16,
+		fill_ratio = 0.0002233,
+		biomes = {"SoulsandValley"},
+		y_min = mcl_mapgen.nether.lava_max + 1,
+		flags = "all_floors, place_center_x, place_center_z",
+		schematic = mod_mcl_blackstone.."/schematics/mcl_blackstone_nether_fossil_2.mts",
+		size = {x = 5, y = 8, z = 5},
+		rotation = "random",
+	})
+	minetest.register_decoration({
+		deco_type = "schematic",
+		place_on = {"mcl_blackstone:soul_soil","mcl_nether:soulsand"},
+		sidelen = 16,
+		fill_ratio = 0.000225,
+		biomes = {"SoulsandValley"},
+		y_min = mcl_mapgen.nether.lava_max + 1,
+		flags = "all_floors, place_center_x, place_center_z",
+		schematic = mod_mcl_blackstone.."/schematics/mcl_blackstone_nether_fossil_3.mts",
+		size = {x = 5, y = 8, z = 5},
+		rotation = "random",
+	})
+	minetest.register_decoration({
+		deco_type = "schematic",
+		place_on = {"mcl_blackstone:soul_soil","mcl_nether:soulsand"},
+		sidelen = 16,
+		fill_ratio = 0.00022323,
+		biomes = {"SoulsandValley"},
+		y_min = mcl_mapgen.nether.lava_max + 1,
+		flags = "all_floors, place_center_x, place_center_z",
+		schematic = mod_mcl_blackstone.."/schematics/mcl_blackstone_nether_fossil_4.mts",
+		size = {x = 5, y = 8, z = 5},
+		rotation = "random",
+	})
+	--BASALT DELTA
+	minetest.register_decoration({
+		deco_type = "simple",
+		decoration = "mcl_blackstone:basalt",
+		place_on = {"mcl_blackstone:basalt","mcl_nether:netherrack","mcl_blackstone:blackstone"},
+		sidelen = 80,
+		height_max = 55,
+		noise_params={
+			offset = -0.0085,
+			scale = 0.002,
+			spread = {x = 25, y = 120, z = 25},
+			seed = 2325,
+			octaves = 5,
+			persist = 2,
+			lacunarity = 3.5,
+			flags = "absvalue"
+		},
+		biomes = {"BasaltDelta"},
+		y_min = mcl_mapgen.nether.lava_max + 1,
+		flags = "all_floors, all ceilings",
+	})
+	minetest.register_decoration({
+		deco_type = "simple",
+		decoration = "mcl_blackstone:basalt",
+		place_on = {"mcl_blackstone:basalt","mcl_nether:netherrack","mcl_blackstone:blackstone"},
+		sidelen = 80,
+		height_max = 15,
+		noise_params={
+			offset = -0.0085,
+			scale = 0.004,
+			spread = {x = 25, y = 120, z = 25},
+			seed = 235,
+			octaves = 5,
+			persist = 2.5,
+			lacunarity = 3.5,
+			flags = "absvalue"
+		},
+		biomes = {"BasaltDelta"},
+		y_min = mcl_mapgen.nether.lava_max + 1,
+		flags = "all_floors, all ceilings",
+	})
+	minetest.register_decoration({
+		deco_type = "simple",
+		decoration = "mcl_nether:magma",
+		place_on = {"mcl_blackstone:basalt","mcl_nether:netherrack","mcl_blackstone:blackstone"},
+		sidelen = 80,
+		fill_ratio = 0.082323,
+		biomes = {"BasaltDelta"},
+		place_offset_y  = -1,
+		y_min = mcl_mapgen.nether.lava_max + 1,
+		flags = "all_floors, all ceilings",
+	})
+	minetest.register_decoration({
+		deco_type = "simple",
+		decoration = "mcl_nether:nether_lava_source",
+		place_on = {"mcl_blackstone:basalt","mcl_nether:netherrack","mcl_blackstone:blackstone"},
+		spawn_by = {"mcl_blackstone:basalt","mcl_blackstone:blackstone"},
+		num_spawn_by = 14,
+		sidelen = 80,
+		fill_ratio = 4,
+		biomes = {"BasaltDelta"},
+		place_offset_y  = -1,
+		y_min = mcl_mapgen.nether.lava_max + 1,
+		y_max = mcl_mapgen.nether.max - 5,
+		flags = "all_floors, force_placement",
+	})
 
 	--[[ THE END ]]
 
@@ -3935,14 +4450,7 @@ local function register_dimension_decorations()
 		place_on = {"mcl_end:end_stone", "air"},
 		flags = "all_floors",
 		sidelen = 16,
-		noise_params = {
-			offset = -0.012,
-			scale = 0.024,
-			spread = {x = 100, y = 100, z = 100},
-			seed = 257,
-			octaves = 3,
-			persist = 0.6
-		},
+		noise_params = chorus_noise_params,
 		y_min = mcl_mapgen.end_.min,
 		y_max = mcl_mapgen.end_.max,
 		decoration = "mcl_end:chorus_flower",
@@ -3961,6 +4469,8 @@ end
 --
 -- Detect mapgen to select functions
 --
+
+local chorus_perlin_noise
 
 if not mcl_mapgen.singlenode then
 	if not superflat then
@@ -3994,8 +4504,10 @@ if not mcl_mapgen.singlenode then
 			vm_context.gennotify = vm_context.gennotify or minetest.get_mapgen_object("gennotify")
 			local gennotify = vm_context.gennotify
 			for _, pos in pairs(gennotify["decoration#"..deco_id_chorus_plant] or {}) do
+				chorus_perlin_noise = chorus_perlin_noise or minetest_get_perlin(chorus_noise_params)
 				local realpos = { x = pos.x, y = pos.y + 1, z = pos.z }
-				local pr = PseudoRandom(vm_context.blockseed)
+				local noise = chorus_perlin_noise:get_3d(realpos)
+				local pr = PseudoRandom(math_floor(math_abs(noise * 32767)) % 32768)
 				minetest.after(1, mcl_end.grow_chorus_plant, realpos, false, pr)
 			end
 			return vm_context
@@ -4003,4 +4515,3 @@ if not mcl_mapgen.singlenode then
 	end
 
 end
-

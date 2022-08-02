@@ -148,16 +148,48 @@ local chunk_scan_range = {
         [ CS_NODES] = {LAST_BLOCK+1, LAST_BLOCK+1},
 }
 
+local EDGE_MIN = mcl_mapgen.EDGE_MIN
+local EDGE_MAX = mcl_mapgen.EDGE_MAX
 local function is_chunk_finished(minp)
-	local center = vector.add(minp, HALF_CS_NODES)
-	for check_x = center.x - CS_NODES, center.x + CS_NODES, CS_NODES do
-		for check_y = center.y - CS_NODES, center.y + CS_NODES, CS_NODES do
-			for check_z = center.z - CS_NODES, center.z + CS_NODES, CS_NODES do
-				local pos = vector.new(check_x, check_y, check_z)
-				if pos ~= center then
-					minetest_get_voxel_manip():read_from_map(pos, pos)
-					local node = minetest_get_node(pos)
+	local center_x = minp.x + HALF_CS_NODES
+	local center_y = minp.y + HALF_CS_NODES
+	local center_z = minp.z + HALF_CS_NODES
+	local from_x = center_x - CS_NODES
+	local from_y = center_y - CS_NODES
+	local from_z = center_z - CS_NODES
+	local to_x = center_x + CS_NODES
+	local to_y = center_y + CS_NODES
+	local to_z = center_z + CS_NODES
+	if from_x < EDGE_MIN then from_x = center_x end
+	if from_y < EDGE_MIN then from_y = center_y end
+	if from_z < EDGE_MIN then from_z = center_z end
+	if to_x > EDGE_MAX then to_x = center_x end
+	if to_y > EDGE_MAX then to_y = center_y end
+	if to_z > EDGE_MAX then to_z = center_z end
+	for check_x = from_x, to_x, CS_NODES do
+		local are_we_in_central_chunk = check_x == center_x
+		for check_y = from_y, to_y, CS_NODES do
+			are_we_in_central_chunk = are_we_in_central_chunk and (check_y == center_y)
+			for check_z = from_z, to_z, CS_NODES do
+				are_we_in_central_chunk = are_we_in_central_chunk and (check_z == center_z)
+				if not are_we_in_central_chunk then
+					local check_pos = {x = check_x, y = check_y, z = check_z}
+					minetest_get_voxel_manip():read_from_map(check_pos, check_pos)
+					local node = minetest_get_node(check_pos)
 					if node.name == "ignore" then
+			-- return nil, means false, means, there is something to generate still,
+			-- (because one of adjacent chunks is unfinished - "ignore" means that),
+			-- means this chunk will be changed, at least one of its sides or corners
+			-- means it's unsafe to place anything there right now, it might disappar,
+			-- better to wait, see the diagram of conflict/ok areas per a single axis:
+
+		-- conflict|   ok   |conflict|conflict|   ok   |conflict|conflict|   ok   |conflict
+		-- (_________Chunk1_________)|(_________Chunk2_________)|(_________Chunk3_________)
+		-- [Block1]|[MidBlk]|[BlockN]|[Block1]|[MidBlk]|[BlockN]|[Block1]|[MidBlk]|[BlockN]
+		--                   \_____________Chunk2-with-shell____________/
+		-- ...______Chunk1-with-shell________/          \________Chunk3-with-shell______...
+		-- Generation of chunk 1 AFFECTS 2 ^^^          ^^^ Generation of chunk 3 affects 2
+		--                   ^^^^^^^^Chunk 2 gen. affects 1 and 3^^^^^^^^
 						return
 					end
 				end
@@ -325,7 +357,7 @@ minetest.register_on_generated(function(minp, maxp, chunkseed)
 		--  mcl_mapgen.register_mapgen_lvm(function(vm_context), order_number)    --
 		--                                                                        --
 		for _, v in pairs(queue_chunks_lvm) do
-			vm_context = v.f(vm_context)
+			v.f(vm_context)
 		end
 		--                                                                                         --
 		--  mcl_mapgen.register_mapgen(function(minp, maxp, chunkseed, vm_context), order_number)  --

@@ -375,6 +375,7 @@ function mobs:register_mob(name, def)
 		--moves the wrong way
 		swap_y_with_x = def.swap_y_with_x or false,
 		reverse_head_yaw = def.reverse_head_yaw or false,
+		_spawn_with_armor = def.spawn_with_armor,
 
 		--END HEAD CODE VARIABLES
 
@@ -401,6 +402,7 @@ function mobs:register_mob(name, def)
 		ignited_by_sunlight = def.ignited_by_sunlight or false,
 		eye_height = def.eye_height or 1.5,
 		defuse_reach = def.defuse_reach or 4,
+		spawn = def.spawn,
 		-- End of MCL2 extensions
 
 		on_spawn = def.on_spawn,
@@ -415,7 +417,7 @@ function mobs:register_mob(name, def)
 
 		--on_breed = def.on_breed,
 
-		--on_grown = def.on_grown,
+		on_grown = def.on_grown,
 
 		--on_detach_child = mob_detach_child,
 

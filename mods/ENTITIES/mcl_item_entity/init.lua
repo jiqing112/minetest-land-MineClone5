@@ -65,6 +65,8 @@ mcl_item_entity.register_pickup_achievement("tree", "mcl:mineWood")
 mcl_item_entity.register_pickup_achievement("mcl_mobitems:blaze_rod", "mcl:blazeRod")
 mcl_item_entity.register_pickup_achievement("mcl_mobitems:leather", "mcl:killCow")
 mcl_item_entity.register_pickup_achievement("mcl_core:diamond", "mcl:diamonds")
+mcl_item_entity.register_pickup_achievement("mcl_core:crying_obsidian", "mcl:whosCuttingOnions")
+mcl_item_entity.register_pickup_achievement("mcl_nether:ancient_debris", "mcl:hiddenInTheDepths")
 
 local function check_pickup_achievements(object, player)
 	if has_awards then
@@ -153,6 +155,10 @@ minetest.register_globalstep(function(dtime)
 
 								object:set_velocity({x=0,y=0,z=0})
 								object:set_acceleration({x=0,y=0,z=0})
+
+								if object._flowing then
+								    object._flowing = false
+								end
 
 								object:move_to(checkpos)
 
@@ -793,6 +799,9 @@ minetest.register_entity(":__builtin:item", {
 
 				local oldvel = self.object:get_velocity() -- v is vector, vel is velocity
 
+				-- apply gravity *before* drag computations
+				oldvel.y = oldvel.y - get_gravity() * dtime
+
 				-- drag
 				local fluid_drag = item_drop_settings.fluid_drag
 
@@ -806,12 +815,6 @@ minetest.register_entity(":__builtin:item", {
                 newv.x = newv.x - (oldvel.x - newv.x) * fluid_drag * dtime
                 newv.y = newv.y - (oldvel.y - newv.y) * fluid_drag * dtime
                 newv.z = newv.z - (oldvel.z - newv.z) * fluid_drag * dtime
-
-                newv.y = newv.y + -0.22 -- (keep slight downward thrust from previous version of code)
-                                        -- NOTE:    is there any particular reason we have this, anyway?
-                                        --          since fluid drag is now on, we could as well just
-                                        --          apply gravity here; drag will slow down the fall
-                                        --          realistically
 				
 				self.object:set_velocity({x = oldvel.x + newv.x * dtime, y = oldvel.y + newv.y * dtime, z = oldvel.z + newv.z * dtime})
 

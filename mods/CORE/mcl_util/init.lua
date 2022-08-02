@@ -1,5 +1,11 @@
 mcl_util = {}
 
+local minetest_get_item_group = minetest.get_item_group
+local minetest_get_meta = minetest.get_meta
+local minetest_get_node = minetest.get_node
+local minetest_get_node_timer = minetest.get_node_timer
+local table_copy = table.copy
+
 -- Updates all values in t using values from to*.
 function table.update(t, ...)
 	for _, to in ipairs{...} do
@@ -33,36 +39,6 @@ function mcl_util.rotate_axis(itemstack, placer, pointed_thing)
 	return itemstack
 end
 
--- Returns position of the neighbor of a double chest node
--- or nil if node is invalid.
--- This function assumes that the large chest is actually intact
--- * pos: Position of the node to investigate
--- * param2: param2 of that node
--- * side: Which "half" the investigated node is. "left" or "right"
-function mcl_util.get_double_container_neighbor_pos(pos, param2, side)
-	if side == "right" then
-		if param2 == 0 then
-			return {x=pos.x-1, y=pos.y, z=pos.z}
-		elseif param2 == 1 then
-			return {x=pos.x, y=pos.y, z=pos.z+1}
-		elseif param2 == 2 then
-			return {x=pos.x+1, y=pos.y, z=pos.z}
-		elseif param2 == 3 then
-			return {x=pos.x, y=pos.y, z=pos.z-1}
-		end
-	else
-		if param2 == 0 then
-			return {x=pos.x+1, y=pos.y, z=pos.z}
-		elseif param2 == 1 then
-			return {x=pos.x, y=pos.y, z=pos.z-1}
-		elseif param2 == 2 then
-			return {x=pos.x-1, y=pos.y, z=pos.z}
-		elseif param2 == 3 then
-			return {x=pos.x, y=pos.y, z=pos.z+1}
-		end
-	end
-end
-
 -- Iterates through all items in the given inventory and
 -- returns the slot of the first item which matches a condition.
 -- Returns nil if no item was found.
@@ -87,7 +63,7 @@ end
 
 -- Returns true if itemstack is a shulker box
 local function is_not_shulker_box(itemstack)
-	local g = minetest.get_item_group(itemstack:get_name(), "shulker_box")
+	local g = minetest_get_item_group(itemstack:get_name(), "shulker_box")
 	return g == 0 or g == nil
 end
 
@@ -133,136 +109,116 @@ end
 --- source_stack_id (optional): The inventory position ID of the source inventory to take the item from (-1 for slot of the first valid item; -1 is default)
 --- destination_list (optional): List name of the destination inventory. Default is normally "main"; "src" for furnace
 -- Returns true on success and false on failure.
+local SHULKER_BOX        = 3
+local FURNACE            = 4
+local DOUBLE_CHEST_LEFT  = 5
+local DOUBLE_CHEST_RIGHT = 6
+local CONTAINER_GROUP_TO_LIST = {
+	[1]                  = "main",
+	[2]                  = "main",
+	[SHULKER_BOX]        = "main",
+	[FURNACE]            = "dst",
+	[DOUBLE_CHEST_LEFT]  = "main",
+	[DOUBLE_CHEST_RIGHT] = "main",
+}
 function mcl_util.move_item_container(source_pos, destination_pos, source_list, source_stack_id, destination_list)
-	local dpos = table.copy(destination_pos)
-	local spos = table.copy(source_pos)
-	local snode = minetest.get_node(spos)
-	local dnode = minetest.get_node(dpos)
-
-	local dctype = minetest.get_item_group(dnode.name, "container")
-	local sctype = minetest.get_item_group(snode.name, "container")
-
-	-- Container type 7 does not allow any movement
-	if sctype == 7 then
-		return false
-	end
-
-	-- Normalize double container by forcing to always use the left segment first
-	local function normalize_double_container(pos, node, ctype)
-		if ctype == 6 then
-			pos = mcl_util.get_double_container_neighbor_pos(pos, node.param2, "right")
-			if not pos then
-				return false
-			end
-			node = minetest.get_node(pos)
-			ctype = minetest.get_item_group(node.name, "container")
-			-- The left segment seems incorrect? We better bail out!
-			if ctype ~= 5 then
-				return false
-			end
+	local spos = table_copy(source_pos)
+	local snode = minetest_get_node(spos)
+	local sctype = minetest_get_item_group(snode.name, "container")
+	local default_source_list = CONTAINER_GROUP_TO_LIST[sctype]
+	if not default_source_list then return end
+	if sctype == DOUBLE_CHEST_RIGHT then
+		local sparam2 = snode.param2
+		if     sparam2 == 0 then spos.x = spos.x - 1
+		elseif sparam2 == 1 then spos.z = spos.z + 1
+		elseif sparam2 == 2 then spos.x = spos.x + 1
+		elseif sparam2 == 3 then spos.z = spos.z - 1
 		end
-		return pos, node, ctype
+		snode = minetest_get_node(spos)
+		sctype = minetest_get_item_group(snode.name, "container")
+		if sctype ~= DOUBLE_CHEST_LEFT then return end
 	end
-
-	spos, snode, sctype = normalize_double_container(spos, snode, sctype)
-	dpos, dnode, dctype = normalize_double_container(dpos, dnode, dctype)
-	if not spos or not dpos then return false end
-
-	local smeta = minetest.get_meta(spos)
-	local dmeta = minetest.get_meta(dpos)
-
+	local smeta = minetest_get_meta(spos)
 	local sinv = smeta:get_inventory()
+	local source_list = source_list or default_source_list
+
+	local dpos = table_copy(destination_pos)
+	local dnode = minetest_get_node(dpos)
+	local dctype = minetest_get_item_group(dnode.name, "container")
+	local default_destination_list = CONTAINER_GROUP_TO_LIST[sctype]
+	if not default_destination_list then return end
+	if dctype == DOUBLE_CHEST_RIGHT then
+		local dparam2 = dnode.param2
+		if     dparam2 == 0 then dpos.x = dpos.x - 1
+		elseif dparam2 == 1 then dpos.z = dpos.z + 1
+		elseif dparam2 == 2 then dpos.x = dpos.x + 1
+		elseif dparam2 == 3 then dpos.z = dpos.z - 1
+		end
+		dnode = minetest_get_node(dpos)
+		dctype = minetest_get_item_group(dnode.name, "container")
+		if dctype ~= DOUBLE_CHEST_LEFT then return end
+	end
+	local dmeta = minetest_get_meta(dpos)
 	local dinv = dmeta:get_inventory()
 
-	-- Default source lists
-	if not source_list then
-		-- Main inventory for most container types
-		if sctype == 2 or sctype == 3 or sctype == 5 or sctype == 6 or sctype == 7 then
-			source_list = "main"
-		-- Furnace: output
-		elseif sctype == 4 then
-			source_list = "dst"
-		-- Unknown source container type. Bail out
-		else
-			return false
-		end
-	end
-
 	-- Automatically select stack slot ID if set to automatic
-	if not source_stack_id then
-		source_stack_id = -1
-	end
+	local source_stack_id = source_stack_id or -1
 	if source_stack_id == -1 then
 		local cond = nil
 		-- Prevent shulker box inception
-		if dctype == 3 then
-			cond = is_not_shulker_box
-		end
+		if dctype == SHULKER_BOX then cond = is_not_shulker_box end
 		source_stack_id = mcl_util.get_eligible_transfer_item_slot(sinv, source_list, dinv, dpos, cond)
 		if not source_stack_id then
-			-- Try again if source is a double container
-			if sctype == 5 then
-				spos = mcl_util.get_double_container_neighbor_pos(spos, snode.param2, "left")
-				smeta = minetest.get_meta(spos)
-				sinv = smeta:get_inventory()
-
-				source_stack_id = mcl_util.get_eligible_transfer_item_slot(sinv, source_list, dinv, dpos, cond)
-				if not source_stack_id then
-					return false
+			if sctype == DOUBLE_CHEST_LEFT then
+				local sparam2 = snode.param2
+				if     sparam2 == 0 then spos.x = spos.x + 1
+				elseif sparam2 == 1 then spos.z = spos.z - 1
+				elseif sparam2 == 2 then spos.x = spos.x - 1
+				elseif sparam2 == 3 then spos.z = spos.z + 1
 				end
-			else
-				return false
+				snode = minetest_get_node(spos)
+				sctype = minetest_get_item_group(snode.name, "container")
+				if sctype ~= DOUBLE_CHEST_RIGHT then return end
+				smeta = minetest_get_meta(spos)
+				sinv = smeta:get_inventory()
+				source_stack_id = mcl_util.get_eligible_transfer_item_slot(sinv, source_list, dinv, dpos, cond)
 			end
 		end
+		if not source_stack_id then return end
 	end
 
 	-- Abort transfer if shulker box wants to go into shulker box
-	if dctype == 3 then
+	if dctype == SHULKER_BOX then
 		local stack = sinv:get_stack(source_list, source_stack_id)
-		if stack and minetest.get_item_group(stack:get_name(), "shulker_box") == 1 then
-			return false
-		end
-	end
-	-- Container type 7 does not allow any placement
-	if dctype == 7 then
-		return false
+		if stack and minetest_get_item_group(stack:get_name(), "shulker_box") == 1 then return end
 	end
 
-	-- If it's a container, put it into the container
-	if dctype ~= 0 then
-		-- Automatically select a destination list if omitted
-		if not destination_list then
-			-- Main inventory for most container types
-			if dctype == 2 or dctype == 3 or dctype == 5 or dctype == 6 or dctype == 7 then
-				destination_list = "main"
-			-- Furnace source slot
-			elseif dctype == 4 then
-				destination_list = "src"
+	local destination_list = destination_list or default_destination_list
+	-- Move item
+	local ok = mcl_util.move_item(sinv, source_list, source_stack_id, dinv, destination_list)
+	-- Try transfer to neighbor node if transfer failed and double container
+	if not ok then
+		if dctype == DOUBLE_CHEST_LEFT then
+			local dparam2 = dnode.param2
+			if     dparam2 == 0 then dpos.x = dpos.x + 1
+			elseif dparam2 == 1 then dpos.z = dpos.z - 1
+			elseif dparam2 == 2 then dpos.x = dpos.x - 1
+			elseif dparam2 == 3 then dpos.z = dpos.z + 1
 			end
-		end
-		if destination_list then
-			-- Move item
-			local ok = mcl_util.move_item(sinv, source_list, source_stack_id, dinv, destination_list)
-
-			-- Try transfer to neighbor node if transfer failed and double container
-			if not ok and dctype == 5 then
-				dpos = mcl_util.get_double_container_neighbor_pos(dpos, dnode.param2, "left")
-				dmeta = minetest.get_meta(dpos)
-				dinv = dmeta:get_inventory()
-
-				ok = mcl_util.move_item(sinv, source_list, source_stack_id, dinv, destination_list)
-			end
-
-			-- Update furnace
-			if ok and dctype == 4 then
-				-- Start furnace's timer function, it will sort out whether furnace can burn or not.
-				minetest.get_node_timer(dpos):start(1.0)
-			end
-
-			return ok
+			dnode = minetest_get_node(dpos)
+			dctype = minetest_get_item_group(dnode.name, "container")
+			if dctype ~= DOUBLE_CHEST_RIGHT then return end
+			dmeta = minetest_get_meta(dpos)
+			dinv = dmeta:get_inventory()
+			ok = mcl_util.move_item(sinv, source_list, source_stack_id, dinv, destination_list)
 		end
 	end
-	return false
+	-- Update furnace
+	if ok and dctype == FURNACE then
+		-- Start furnace's timer function, it will sort out whether furnace can burn or not.
+		minetest_get_node_timer(dpos):start(1.0)
+	end
+	return ok
 end
 
 -- Returns the ID of the first non-empty slot in the given inventory list
@@ -292,7 +248,7 @@ function mcl_util.generate_on_place_plant_function(condition)
 		end
 
 		-- Call on_rightclick if the pointed node defines it
-		local node = minetest.get_node(pointed_thing.under)
+		local node = minetest_get_node(pointed_thing.under)
 		if placer and not placer:get_player_control().sneak then
 			if minetest.registered_nodes[node.name] and minetest.registered_nodes[node.name].on_rightclick then
 				return minetest.registered_nodes[node.name].on_rightclick(pointed_thing.under, node, placer, itemstack) or itemstack
@@ -300,8 +256,8 @@ function mcl_util.generate_on_place_plant_function(condition)
 		end
 
 		local place_pos
-		local def_under = minetest.registered_nodes[minetest.get_node(pointed_thing.under).name]
-		local def_above = minetest.registered_nodes[minetest.get_node(pointed_thing.above).name]
+		local def_under = minetest.registered_nodes[minetest_get_node(pointed_thing.under).name]
+		local def_above = minetest.registered_nodes[minetest_get_node(pointed_thing.above).name]
 		if not def_under or not def_above then
 			return itemstack
 		end
@@ -359,7 +315,7 @@ function mcl_util.call_on_rightclick(itemstack, player, pointed_thing)
 	-- Call on_rightclick if the pointed node defines it
 	if pointed_thing and pointed_thing.type == "node" then
 		local pos = pointed_thing.under
-		local node = minetest.get_node(pos)
+		local node = minetest_get_node(pos)
 		if player and not player:get_player_control().sneak then
 			local nodedef = minetest.registered_nodes[node.name]
 			local on_rightclick = nodedef and nodedef.on_rightclick
@@ -372,7 +328,7 @@ end
 
 function mcl_util.calculate_durability(itemstack)
 	local unbreaking_level = mcl_enchanting.get_enchantment(itemstack, "unbreaking")
-	local armor_uses = minetest.get_item_group(itemstack:get_name(), "mcl_armor_uses")
+	local armor_uses = minetest_get_item_group(itemstack:get_name(), "mcl_armor_uses")
 
 	local uses
 
@@ -417,6 +373,7 @@ function mcl_util.deal_damage(target, damage, mcl_reason)
 			-- target:punch(puncher, 1.0, {full_punch_interval = 1.0, damage_groups = {fleshy = damage}}, vector.direction(puncher:get_pos(), target:get_pos()), damage)
 			if luaentity.health > 0 then
 				luaentity.health = luaentity.health - damage
+				luaentity.pause_timer = 0.4
 			end
 			return
 		end

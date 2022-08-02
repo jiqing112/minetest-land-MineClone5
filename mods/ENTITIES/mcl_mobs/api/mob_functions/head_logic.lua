@@ -6,9 +6,9 @@ local degrees = function(yaw)
 	return yaw*180.0/math.pi
 end
 
-mobs.do_head_logic = function(self,dtime)
+mobs.do_head_logic = function(self, dtime, player)
 
-	local player = minetest.get_player_by_name("singleplayer")
+	local player = player or minetest.get_player_by_name("singleplayer")
 
 	local look_at = player:get_pos()
 	look_at.y = look_at.y + player:get_properties().eye_height
@@ -89,10 +89,21 @@ mobs.do_head_logic = function(self,dtime)
 		head_pitch = head_pitch + self.head_pitch_modifier
 	end
 
-	if self.swap_y_with_x then
-		self.object:set_bone_position(self.head_bone, bone_pos, vector.new(degrees(head_pitch),degrees(head_yaw),0))
+	local head_bone = self.head_bone
+	if (type(head_bone) == "table") then
+		for _, v in pairs(head_bone) do
+			if self.swap_y_with_x then
+				self.object:set_bone_position(v, bone_pos, vector.new(degrees(head_pitch),degrees(head_yaw),0))
+			else
+				self.object:set_bone_position(v, bone_pos, vector.new(degrees(head_pitch),0,degrees(head_yaw)))
+			end
+		end
 	else
-		self.object:set_bone_position(self.head_bone, bone_pos, vector.new(degrees(head_pitch),0,degrees(head_yaw)))
+		if self.swap_y_with_x then
+			self.object:set_bone_position(head_bone, bone_pos, vector.new(degrees(head_pitch),degrees(head_yaw),0))
+		else
+			self.object:set_bone_position(head_bone, bone_pos, vector.new(degrees(head_pitch),0,degrees(head_yaw)))
+		end
 	end
 	--set_bone_position([bone, position, rotation])
 end

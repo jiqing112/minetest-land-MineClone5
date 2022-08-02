@@ -1,157 +1,165 @@
--- Skins for MineClone 2
+-- Skins for MineClone 5
 
-local modname = minetest.get_current_modname()
+local S = minetest.get_translator("mcl_skins")
+local color_to_string = minetest.colorspec_to_colorstring
 
 mcl_skins = {
-	skins = {}, list = {}, previews = {}, meta = {}, has_preview = {},
-	modpath = minetest.get_modpath(modname),
-	skin_count = 0, -- counter of _custom_ skins (all skins except character.png)
+	tab_names = {"base", "footwear", "eye", "mouth", "bottom", "top", "hair", "headwear"}, -- Rendering order
+	tab_names_display_order = {"template", "base", "headwear", "hair", "eye", "mouth", "top", "arm", "bottom", "footwear"},
+	tab_descriptions = {
+		template = S("Templates"),
+		arm = S("Arm size"),
+		base = S("Bases"),
+		footwear = S("Footwears"),
+		eye = S("Eyes"),
+		mouth = S("Mouths"),
+		bottom = S("Bottoms"),
+		top = S("Tops"),
+		hair = S("Hairs"),
+		headwear = S("Headwears")
+	},
+	steve = {}, -- Stores skin values for Steve skin
+	alex = {}, -- Stores skin values for Alex skin
+	base = {}, -- List of base textures
+	
+	-- Base color is separate to keep the number of junk nodes registered in check
+	base_color = {0xffeeb592, 0xffb47a57, 0xff8d471d},
+	color = {
+		0xff613915, -- 1 Dark brown Steve hair, Alex bottom
+		0xff97491b, -- 2 Medium brown
+		0xffb17050, -- 3 Light brown
+		0xffe2bc7b, -- 4 Beige
+		0xff706662, -- 5 Gray
+		0xff151515, -- 6 Black
+		0xffc21c1c, -- 7 Red
+		0xff178c32, -- 8 Green Alex top
+		0xffae2ad3, -- 9 Plum
+		0xffebe8e4, -- 10 White
+		0xffe3dd26, -- 11 Yellow
+		0xff449acc, -- 12 Light blue Steve top
+		0xff124d87, -- 13 Dark blue Steve bottom
+		0xfffc0eb3, -- 14 Pink
+		0xffd0672a, -- 15 Orange Alex hair
+	},
+	footwear = {},
+	mouth = {},
+	eye = {},
+	bottom = {},
+	top = {},
+	hair = {},
+	headwear = {},
+	masks = {},
+	previews = {},
+	players = {}
 }
 
-local S = minetest.get_translator(modname)
-local has_mcl_inventory = minetest.get_modpath("mcl_inventory")
-
--- load skin list and metadata
-local id, f, data, skin = 0
-
-while true do
-
-	if id == 0 then
-		skin = "character"
-		mcl_skins.has_preview[id] = true
-	else
-		skin = "mcl_skins_character_" .. id
-		local preview = "mcl_skins_player_" .. id
-
-		-- Does skin file exist?
-		f = io.open(mcl_skins.modpath .. "/textures/" .. skin .. ".png")
-
-		-- escape loop if not found
-		if not f then
-			break
-		end
-		f:close()
-
-		-- Does skin preview file exist?
-		local file_preview = io.open(mcl_skins.modpath .. "/textures/" .. preview .. ".png")
-		if file_preview == nil then
-			minetest.log("warning", "[mcl_skins] Player skin #"..id.." does not have preview image (player_"..id..".png)")
-			mcl_skins.has_preview[id] = false
-		else
-			mcl_skins.has_preview[id] = true
-			file_preview:close()
-		end
+function mcl_skins.register_item(item)
+	assert(mcl_skins[item.type], "Skin item type " .. item.type .. " does not exist.")
+	local texture = item.texture or "blank.png"
+	if item.steve then
+		mcl_skins.steve[item.type] = texture
 	end
-
-	mcl_skins.list[id] = skin
-
-	-- does metadata exist for that skin file ?
-	if id == 0 then
-		metafile = "mcl_skins_character.txt"
-	else
-		metafile = "mcl_skins_character_"..id..".txt"
+	
+	if item.alex then
+		mcl_skins.alex[item.type] = texture
 	end
-	f = io.open(mcl_skins.modpath .. "/meta/" .. metafile)
-
-	data = nil
-	if f then
-		data = minetest.deserialize("return {" .. f:read("*all") .. "}")
-		f:close()
-	end
-
-	-- add metadata to list
-	mcl_skins.meta[skin] = {
-		name = data and data.name or "",
-		author = data and data.author or "",
-		gender = data and data.gender or "",
-	}
-
-	if id > 0 then
-		mcl_skins.skin_count = mcl_skins.skin_count + 1
-	end
-	id = id + 1
+	
+	table.insert(mcl_skins[item.type], texture)
+	mcl_skins.masks[texture] = item.mask
+	if item.preview then mcl_skins.previews[texture] = item.preview end
 end
 
-function mcl_skins.cycle_skin(player)
-	local skin_id = tonumber(player:get_meta():get_string("mcl_skins:skin_id"))
-	if not skin_id then
-		skin_id = 0
-	end
-	skin_id = skin_id + 1
-	if skin_id > mcl_skins.skin_count then
-		skin_id = 0
-	end
-	mcl_skins.set_player_skin(player, skin_id)
+function mcl_skins.save(player)
+	if not player or not player:is_player() then return end
+	local name = player:get_player_name()
+	local skin = mcl_skins.players[name]
+	if not skin then return end
+	player:get_meta():set_string("mcl_skins:skin", minetest.serialize(skin))
 end
 
-function mcl_skins.set_player_skin(player, skin_id)
-	if not player then
-		return false
+minetest.register_chatcommand("skin", {
+	description = S("Open skin configuration screen."),
+	privs = {},
+	func = function(name, param) mcl_skins.show_formspec(minetest.get_player_by_name(name)) end
+})
+
+function mcl_skins.make_hand_texture(base, colorspec)
+	local output = ""
+	if mcl_skins.masks[base] then
+		output = mcl_skins.masks[base] ..
+			"^[colorize:" .. color_to_string(colorspec) .. ":alpha"
 	end
-	local playername = player:get_player_name()
-	local skin, preview
-	if skin_id == nil or type(skin_id) ~= "number" or skin_id < 0 or skin_id > mcl_skins.skin_count then
-		return false
-	elseif skin_id == 0 then
-		skin = "character"
-		preview = "player"
-		mcl_player.player_set_model(player, "mcl_armor_character.b3d")
-	else
-		skin = "mcl_skins_character_" .. tostring(skin_id)
-		local meta = mcl_skins.meta[skin]
-		if meta.gender == "female" then
-			mcl_player.player_set_model(player, "mcl_armor_character_female.b3d")
-		else
-			mcl_player.player_set_model(player, "mcl_armor_character.b3d")
+	if #output > 0 then output = output .. "^" end
+	output = output .. base
+	return output
+end
+
+function mcl_skins.compile_skin(skin)
+	local output = ""
+	for i, tab in pairs(mcl_skins.tab_names) do
+		local texture = skin[tab]
+		if texture and texture ~= "blank.png" then
+			
+			if skin[tab .. "_color"] and mcl_skins.masks[texture] then
+				if #output > 0 then output = output .. "^" end
+				local color = color_to_string(skin[tab .. "_color"])
+				output = output ..
+					"(" .. mcl_skins.masks[texture] .. "^[colorize:" .. color .. ":alpha)"
+			end
+			if #output > 0 then output = output .. "^" end
+			output = output .. texture
 		end
-		if mcl_skins.has_preview[skin_id] then
-			preview = "mcl_skins_player_" .. tostring(skin_id)
-		else
-			-- Fallback preview image if preview image is missing
-			preview = "mcl_skins_player_dummy"
-		end
 	end
-	--local skin_file = skin .. ".png"
-	mcl_skins.skins[playername] = skin
-	mcl_skins.previews[playername] = preview
-	player:get_meta():set_string("mcl_skins:skin_id", tostring(skin_id))
-	mcl_skins.update_player_skin(player)
-	if has_mcl_inventory then
-		mcl_inventory.update_inventory_formspec(player)
-	end
-	for i=1, #mcl_skins.registered_on_set_skins do
-		mcl_skins.registered_on_set_skins[i](player, skin)
-	end
-	minetest.log("action", "[mcl_skins] Player skin for "..playername.." set to skin #"..skin_id)
-	return true
+	return output
 end
 
 function mcl_skins.update_player_skin(player)
 	if not player then
 		return
 	end
-	local playername = player:get_player_name()
-	mcl_player.player_set_skin(player, mcl_skins.skins[playername] .. ".png", mcl_skins.previews[playername] .. ".png")
+	
+	local skin = mcl_skins.players[player:get_player_name()]
+
+	mcl_player.player_set_skin(player, mcl_skins.compile_skin(skin))
+	
+	local model = skin.slim_arms and "mcl_armor_character_female.b3d" or "mcl_armor_character.b3d"
+	mcl_player.player_set_model(player, model)
+	
+	mcl_inventory.update_inventory_formspec(player)
+	
+	for i=1, #mcl_skins.registered_on_set_skins do
+		mcl_skins.registered_on_set_skins[i](player)
+	end
 end
 
--- load player skin on join
+-- Load player skin on join
 minetest.register_on_joinplayer(function(player)
+	local function table_get_random(t)
+		return t[math.random(#t)]
+	end
 	local name = player:get_player_name()
-	local skin_id = player:get_meta():get_string("mcl_skins:skin_id")
-	local set_skin
-	-- do we already have a skin in player attributes?
-	if skin_id and skin_id ~= "" then
-		set_skin = tonumber(skin_id)
-	-- otherwise use random skin if not set
+	local skin = player:get_meta():get_string("mcl_skins:skin")
+	if skin then
+		skin = minetest.deserialize(skin)
 	end
-	if not set_skin then
-		set_skin = math.random(0, mcl_skins.skin_count)
+	if skin then
+		mcl_skins.players[name] = skin
+	else
+		if math.random() > 0.5 then
+			skin = table.copy(mcl_skins.steve)
+		else
+			skin = table.copy(mcl_skins.alex)
+		end
+		mcl_skins.players[name] = skin
 	end
-	local ok = mcl_skins.set_player_skin(player, set_skin)
-	if not ok then
-		set_skin = math.random(0, mcl_skins.skin_count)
-		minetest.log("warning", "[mcl_skins] Player skin for "..name.." not found, falling back to skin #"..set_skin)
-		mcl_skins.set_player_skin(player, set_skin)
+	mcl_skins.save(player)
+	mcl_skins.update_player_skin(player)
+end)
+
+minetest.register_on_leaveplayer(function(player)
+	local name = player:get_player_name()
+	if name then
+		mcl_skins.players[name] = nil
 	end
 end)
 
@@ -161,134 +169,298 @@ function mcl_skins.register_on_set_skin(func)
 	table.insert(mcl_skins.registered_on_set_skins, func)
 end
 
--- command to set player skin (usually for custom skins)
-minetest.register_chatcommand("setskin", {
-	params = S("[<player>] [<skin number>]"),
-	description = S("Select player skin of yourself or another player"),
-	privs = {},
-	func = function(name, param)
-
-		if param == "" and name ~= "" then
-			mcl_skins.show_formspec(name)
-			return true
+function mcl_skins.show_formspec(player, active_tab, page_num)
+	active_tab = active_tab or "template"
+	page_num = page_num or 1
+	
+	local page_count
+	if page_num < 1 then page_num = 1 end
+	if mcl_skins[active_tab] then
+		page_count = math.ceil(#mcl_skins[active_tab] / 25)
+		if page_num > page_count then
+			page_num = page_count
 		end
-		local playername, skin_id = string.match(param, "([^ ]+) (%d+)")
-		if not playername or not skin_id then
-			skin_id = string.match(param, "(%d+)")
-			if not skin_id then
-				return false, S("Insufficient or wrong parameters")
-			end
-			playername = name
-		end
-		skin_id = tonumber(skin_id)
-
-		local player = minetest.get_player_by_name(playername)
-
-		if not player then
-			return false, S("Player @1 not online!", playername)
-		end
-		if name ~= playername then
-			local privs = minetest.get_player_privs(name)
-			if not privs.server then
-				return false, S("You need the “server” privilege to change the skin of other players!")
-			end
-		end
-
-		local ok = mcl_skins.set_player_skin(player, skin_id)
-		if not ok then
-			return false, S("Invalid skin number! Valid numbers: 0 to @1", mcl_skins.skin_count)
-		end
-		local skinfile = "#"..skin_id
-
-		local meta = mcl_skins.meta[mcl_skins.skins[playername]]
-		local your_msg
-		if not meta.name or meta.name == "" then
-			your_msg = S("Your skin has been set to: @1", skinfile)
-		else
-			your_msg = S("Your skin has been set to: @1 (@2)", meta.name, skinfile)
-		end
-		if name == playername then
-			return true, your_msg
-		else
-			minetest.chat_send_player(playername, your_msg)
-			return true, S("Skin of @1 set to: @2 (@3)", playername, meta.name, skinfile)
-		end
-
-	end,
-})
-
-minetest.register_on_player_receive_fields(function(player, formname, fields)
-	if fields.__mcl_skins then
-		if mcl_skins.skin_count <= 6 then
-			-- Change skin immediately if there are not many skins
-			mcl_skins.cycle_skin(player)
-			if player:get_attach() then
-				mcl_player.player_set_animation(player, "sit")
-			end
-		else
-			-- Show skin selection formspec otherwise
-			mcl_skins.show_formspec(player:get_player_name())
-		end
+	else
+		page_num = 1
+		page_count = 1
 	end
-end)
-
-function mcl_skins.show_formspec(playername)
-	local formspec = "size[7,8.5]"
-
-	formspec = formspec .. "label[2,2;" .. minetest.formspec_escape(minetest.colorize("#383838", S("Select player skin:"))) .. "]"
-		.. "textlist[0,2.5;6.8,6;skins_set;"
-
-	local meta
-	local selected = 1
-
-	for i = 0, mcl_skins.skin_count do
-
-		local label = S("@1 (@2)", mcl_skins.meta[mcl_skins.list[i]].name, "#"..i)
-
-		formspec = formspec .. minetest.formspec_escape(label)
-
-		if mcl_skins.skins[playername] == mcl_skins.list[i] then
-			selected = i + 1
-			meta = mcl_skins.meta[mcl_skins.list[i]]
+	
+	local player_name = player:get_player_name()
+	local skin = mcl_skins.players[player_name]
+	local formspec = "formspec_version[3]" ..
+		"size[13,10]"
+	
+	for i, tab in pairs(mcl_skins.tab_names_display_order) do
+		if tab == active_tab then
+			formspec = formspec ..
+				"style[" .. tab .. ";bgcolor=green]"
 		end
-
-		if i < #mcl_skins.list then
-			formspec = formspec ..","
-		end
+		
+		local y = 0.3 + (i - 1) * 0.8
+		formspec = formspec ..
+			"button[0.3," .. y .. ";3,0.8;" .. tab .. ";" .. mcl_skins.tab_descriptions[tab] .. "]"
 	end
 
-	formspec = formspec .. ";" .. selected .. ";false]"
+	local mesh = skin.slim_arms and "mcl_armor_character_female.b3d" or "mcl_armor_character.b3d"
+	
+	formspec = formspec ..
+		"model[9.5,0.3;3,7;player_mesh;" .. mesh .. ";" ..
+		mcl_skins.compile_skin(skin) ..
+		",blank.png,blank.png;0,180;false;true;0,0;0]"
+	
+	if mcl_skins[active_tab] then
+		local textures = mcl_skins[active_tab]
+		local page_start = (page_num - 1) * 25 + 1
+		local page_end = math.min(page_start + 25 - 1, #textures)
+		
+		for j = page_start, page_end do
+			local i = j - page_start + 1
+			local texture = textures[j]
+			local preview = ""
+			if mcl_skins.previews[texture] then
+				preview = mcl_skins.previews[texture]
+				if skin[active_tab .. "_color"] then
+					local color = minetest.colorspec_to_colorstring(skin[active_tab .. "_color"])
+					preview = preview:gsub("{color}", color)
+				end
+			elseif active_tab == "base" then
+				if mcl_skins.masks[texture] then
+					preview = mcl_skins.masks[texture] .. "^[sheet:8x4:1,1" ..
+						"^[colorize:" .. color_to_string(skin.base_color) .. ":alpha"
+				end
+				if #preview > 0 then preview = preview .. "^" end
+				preview = preview .. "(" .. texture .. "^[sheet:8x4:1,1)"
+			elseif active_tab == "mouth" or active_tab == "eye" then
+				preview = texture .. "^[sheet:8x4:1,1"
+			elseif active_tab == "headwear" then
+				preview = texture .. "^[sheet:8x4:5,1^(" .. texture .. "^[sheet:8x4:1,1)"
+			elseif active_tab == "hair" then
+				if mcl_skins.masks[texture] then
+					preview = mcl_skins.masks[texture] .. "^[sheet:8x4:1,1" ..
+						"^[colorize:" .. color_to_string(skin.hair_color) .. ":alpha^(" ..
+						texture .. "^[sheet:8x4:1,1)^(" ..
+						mcl_skins.masks[texture] .. "^[sheet:8x4:5,1" ..
+						"^[colorize:" .. color_to_string(skin.hair_color) .. ":alpha)" ..
+						"^(" .. texture .. "^[sheet:8x4:5,1)"
+				else
+					preview = texture .. "^[sheet:8x4:5,1"
+				end
+			elseif active_tab == "top" then
+				if mcl_skins.masks[texture] then
+					preview = "[combine:12x12:-18,-20=" .. mcl_skins.masks[texture] ..
+						"^[colorize:" .. color_to_string(skin.top_color) .. ":alpha"
+				end
+				if #preview > 0 then preview = preview .. "^" end
+				preview = preview .. "[combine:12x12:-18,-20=" .. texture .. "^[mask:mcl_skins_top_preview_mask.png"
+			elseif active_tab == "bottom" then
+				if mcl_skins.masks[texture] then
+					preview = "[combine:12x12:0,-20=" .. mcl_skins.masks[texture] ..
+						"^[colorize:" .. color_to_string(skin.bottom_color) .. ":alpha"
+				end
+				if #preview > 0 then preview = preview .. "^" end
+				preview = preview .. "[combine:12x12:0,-20=" .. texture .. "^[mask:mcl_skins_bottom_preview_mask.png"
+			elseif active_tab == "footwear" then
+				preview = "[combine:12x12:0,-20=" .. texture .. "^[mask:mcl_skins_bottom_preview_mask.png"
+			end
+			
+			if skin[active_tab] == texture then
+				preview = preview .. "^mcl_skins_select_overlay.png"
+			end
+			
+			i = i - 1
+			local x = 3.6 + i % 5 * 1.1
+			local y = 0.3 + math.floor(i / 5) * 1.1
+			formspec = formspec ..
+				"image_button[" .. x .. "," .. y ..
+				";1,1;" .. preview .. ";" .. texture .. ";]"
+		end
+	elseif active_tab == "arm" then
+		local thick_overlay = not skin.slim_arms and "^mcl_skins_select_overlay.png" or ""
+		local slim_overlay = skin.slim_arms and "^mcl_skins_select_overlay.png" or ""
+		formspec = formspec ..
+			"image_button[3.6,0.3;1,1;mcl_skins_thick_arms.png" .. thick_overlay ..";thick_arms;]" ..
+			"image_button[4.7,0.3;1,1;mcl_skins_slim_arms.png" .. slim_overlay ..";slim_arms;]"
+	
+	elseif active_tab == "template" then
+		formspec = formspec ..
+			"model[4,2;2,3;player_mesh;" .. mesh .. ";" ..
+			mcl_skins.compile_skin(mcl_skins.steve) ..
+			",blank.png,blank.png;0,180;false;true;0,0;0]" ..
 
-	formspec = formspec .. "image[0,0;1.35,2.7;" .. mcl_skins.previews[playername] .. ".png]"
+			"button[4,5.2;2,0.8;steve;" .. S("Select") .. "]" ..
 
-	if meta then
-		if meta.name and meta.name ~= "" then
-			formspec = formspec .. "label[2,0.5;" .. minetest.formspec_escape(minetest.colorize("#383838", S("Name: @1", meta.name))) .. "]"
+			"model[6.5,2;2,3;player_mesh;" .. mesh .. ";" ..
+			mcl_skins.compile_skin(mcl_skins.alex) ..
+			",blank.png,blank.png;0,180;false;true;0,0;0]" ..
+			
+			"button[6.5,5.2;2,0.8;alex;" .. S("Select") .. "]"
+			
+	end
+	
+	if skin[active_tab .. "_color"] then
+		local colors = mcl_skins.color
+		if active_tab == "base" then colors = mcl_skins.base_color end
+		
+		local tab_color = active_tab .. "_color"
+		
+		for i, colorspec in pairs(colors) do
+			local overlay = ""
+			if skin[tab_color] == colorspec then
+				overlay = "^mcl_skins_select_overlay.png"
+			end
+		
+			local color = minetest.colorspec_to_colorstring(colorspec)
+			i = i - 1
+			local x = 3.6 + i % 8 * 1.1
+			local y = 7 + math.floor(i / 8) * 1.1
+			formspec = formspec ..
+				"image_button[" .. x .. "," .. y ..
+				";1,1;blank.png^[noalpha^[colorize:" ..
+				color .. ":alpha" .. overlay .. ";" .. colorspec .. ";]"
 		end
 	end
+	
+	if page_num > 1 then
+		formspec = formspec ..
+			"image_button[3.6,5.8;1,1;mcl_skins_arrow.png^[transformFX;previous_page;]"
+	end
+	
+	if page_num < page_count then
+		formspec = formspec ..
+			"image_button[8,5.8;1,1;mcl_skins_arrow.png;next_page;]"
+	end
+	
+	if page_count > 1 then
+		formspec = formspec ..
+			"label[5.9,6.3;" .. page_num .. " / " .. page_count .. "]"
+	end
 
-	minetest.show_formspec(playername, "mcl_skins:skin_select", formspec)
+	minetest.show_formspec(player_name, "mcl_skins:" .. active_tab .. "_" .. page_num, formspec)
 end
 
 minetest.register_on_player_receive_fields(function(player, formname, fields)
+	if fields.__mcl_skins then
+		mcl_skins.show_formspec(player)
+		return false
+	end
 
-	if formname == "mcl_skins:skin_select" then
-
-		local name = player:get_player_name()
-
-		local event = minetest.explode_textlist_event(fields["skins_set"])
-
-		if event.type == "CHG" or event.type == "DCL" then
-
-			local skin_id = math.min(event.index - 1, mcl_skins.skin_count)
-			if not mcl_skins.list[skin_id] then
-				return -- Do not update wrong skin number
+	if not formname:find("^mcl_skins:") then return false end
+	local _, _, active_tab, page_num = formname:find("^mcl_skins:(%a+)_(%d+)")
+	if not page_num or not active_tab then return true end
+	page_num = math.floor(tonumber(page_num) or 1)
+	local player_name = player:get_player_name()
+	
+	for field, value in pairs(fields) do
+		if field == "quit" then
+			mcl_skins.save(player)
+			return true
+		end
+		
+		if field == "alex" then
+			mcl_skins.players[player_name] = table.copy(mcl_skins.alex)
+			mcl_skins.update_player_skin(player)
+			mcl_skins.show_formspec(player, active_tab, page_num)
+			return true
+		elseif field == "steve" then
+			mcl_skins.players[player_name] = table.copy(mcl_skins.steve)
+			mcl_skins.update_player_skin(player)
+			mcl_skins.show_formspec(player, active_tab, page_num)
+			return true
+		end
+		
+		for i, tab in pairs(mcl_skins.tab_names_display_order) do
+			if field == tab then
+				mcl_skins.show_formspec(player, tab, page_num)
+				return true
 			end
-
-			mcl_skins.set_player_skin(player, skin_id)
-			mcl_skins.show_formspec(name)
+		end
+		
+		local skin = mcl_skins.players[player_name]
+		if not skin then return true end
+		
+		if field == "next_page" then
+			page_num = page_num + 1
+			mcl_skins.show_formspec(player, active_tab, page_num)
+			return true
+		elseif field == "previous_page" then
+			page_num = page_num - 1
+			mcl_skins.show_formspec(player, active_tab, page_num)
+			return true
+		end
+		
+		if active_tab == "arm" then
+			if field == "thick_arms" then
+				skin.slim_arms = false
+			elseif field == "slim_arms" then
+				skin.slim_arms = true
+			end
+			mcl_skins.update_player_skin(player)
+			mcl_skins.show_formspec(player, active_tab, page_num)
+			return true
+		end
+		
+		-- See if field is a texture
+		if mcl_skins[active_tab] then
+			for i, texture in pairs(mcl_skins[active_tab]) do
+				if texture == field then
+					skin[active_tab] = texture
+					mcl_skins.update_player_skin(player)
+					mcl_skins.show_formspec(player, active_tab, page_num)
+					return true
+				end
+			end
+		end
+		
+		-- See if field is a color
+		if skin[active_tab .. "_color"] then
+			local color = math.floor(tonumber(field) or 0)
+			if color and color >= 0 and color <= 0xffffffff then
+				skin[active_tab .. "_color"] = color
+				mcl_skins.update_player_skin(player)
+				mcl_skins.show_formspec(player, active_tab, page_num)
+				return true
+			end
 		end
 	end
+
+	return true
 end)
 
-minetest.log("action", "[mcl_skins] Mod initialized with "..mcl_skins.skin_count.." custom skin(s)")
+local function init()
+	local function file_exists(name)
+		local f = io.open(name)
+		if not f then
+			return false
+		end
+		f:close()
+		return true
+	end
+	mcl_skins.modpath = minetest.get_modpath("mcl_skins")
+
+	local f = io.open(mcl_skins.modpath .. "/list.json")
+	assert(f, "Can't open the file list.json")
+	local data = f:read("*all")
+	assert(data, "Can't read data from list.json")
+	local json, error = minetest.parse_json(data)
+	assert(json, error)
+	f:close()
+	
+	for _, item in pairs(json) do
+		mcl_skins.register_item(item)
+	end
+	mcl_skins.steve.base_color = mcl_skins.base_color[1]
+	mcl_skins.steve.hair_color = mcl_skins.color[1]
+	mcl_skins.steve.top_color = mcl_skins.color[12]
+	mcl_skins.steve.bottom_color = mcl_skins.color[13]
+	mcl_skins.steve.slim_arms = false
+	
+	mcl_skins.alex.base_color = mcl_skins.base_color[1]
+	mcl_skins.alex.hair_color = mcl_skins.color[15]
+	mcl_skins.alex.top_color = mcl_skins.color[8]
+	mcl_skins.alex.bottom_color = mcl_skins.color[1]
+	mcl_skins.alex.slim_arms = true
+	
+	mcl_skins.previews["blank.png"] = "blank.png"
+end
+
+init()
