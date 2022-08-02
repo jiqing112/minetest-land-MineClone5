@@ -417,7 +417,7 @@ function mobs:register_mob(name, def)
 
 		--on_breed = def.on_breed,
 
-		--on_grown = def.on_grown,
+		on_grown = def.on_grown,
 
 		--on_detach_child = mob_detach_child,
 

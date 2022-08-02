@@ -146,11 +146,12 @@ end
 
 --make the baby grow up
 mobs.baby_grow_up = function(self)
-    self.baby = nil
-    self.visual_size  = self.backup_visual_size
-    self.collisionbox = self.backup_collisionbox
-    self.selectionbox = self.backup_selectionbox
-    self.object:set_properties(self)
+	self.baby = nil
+	self.visual_size  = self.backup_visual_size
+	self.collisionbox = self.backup_collisionbox
+	self.selectionbox = self.backup_selectionbox
+	self.object:set_properties(self)
+	if self.on_grown then self.on_grown(self) end
 end
 
 --makes the baby grow up faster with diminishing returns
