@@ -7,7 +7,7 @@ local degrees = function(yaw)
 end
 
 mobs.do_head_logic = function(self, dtime, player)
-if not self.has_head == true then return end
+	if not self.has_head == true then return end
 	local player = player or minetest.get_player_by_name("singleplayer")
 
 	local look_at = player:get_pos()
@@ -24,16 +24,15 @@ if not self.has_head == true then return end
 	local head_offset = vector.multiply(body_dir, self.head_direction_offset)
 
 	pos = vector.add(pos, head_offset)
-
-if minetest.settings:get_bool("mcl_debug_head_code", false) then
-	minetest.add_particle({
-		pos = pos,
-		velocity = {x=0, y=0, z=0},
-		acceleration = {x=0, y=0, z=0},
-		expirationtime = 0.2,
-		size = 1,
-		texture = "default_dirt.png",
-	})
+	if minetest.settings:get_bool("mcl_debug_head_code", false) then
+		minetest.add_particle({
+			pos = pos,
+			velocity = {x=0, y=0, z=0},
+			acceleration = {x=0, y=0, z=0},
+			expirationtime = 0.2,
+			size = 1,
+			texture = "default_dirt.png",
+		})
 end
 	local bone_pos = vector.new(0,0,0)
 
