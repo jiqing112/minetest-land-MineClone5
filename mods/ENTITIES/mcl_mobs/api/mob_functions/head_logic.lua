@@ -7,7 +7,7 @@ local degrees = function(yaw)
 end
 
 mobs.do_head_logic = function(self, dtime, player)
-
+if not self.has_head == true then return end
 	local player = player or minetest.get_player_by_name("singleplayer")
 
 	local look_at = player:get_pos()
@@ -107,3 +107,4 @@ mobs.do_head_logic = function(self, dtime, player)
 	end
 	--set_bone_position([bone, position, rotation])
 end
+
