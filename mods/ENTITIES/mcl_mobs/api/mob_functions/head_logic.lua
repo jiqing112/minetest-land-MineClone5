@@ -108,4 +108,3 @@ end
 	end
 	--set_bone_position([bone, position, rotation])
 end
-
