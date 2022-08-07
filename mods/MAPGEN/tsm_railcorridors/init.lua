@@ -94,13 +94,17 @@ if setting then
 end
 
 -- Max. and min. heights between rail corridors are generated
-local height_min
-if mcl_mapgen.lava then
-	height_min = mcl_mapgen.overworld.lava_max + 2
-else
-	height_min = mcl_mapgen.overworld.bedrock_max + 2
+local height_min, height_max
+local get_local_settings = function()
+	if mcl_mapgen.lava then
+		height_min = mcl_mapgen.overworld.lava_max + 2
+	else
+		height_min = mcl_mapgen.overworld.bedrock_max + 2
+	end
+	height_max = mcl_worlds.layer_to_y(60)
 end
-local height_max = mcl_worlds.layer_to_y(60)
+get_local_settings()
+mcl_mapgen.register_on_settings_changed(get_local_settings)
 
 -- Chaos Mode: If enabled, rail corridors don't stop generating when hitting obstacles
 local chaos_mode = minetest.settings:get_bool("tsm_railcorridors_chaos") or false

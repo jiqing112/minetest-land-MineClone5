@@ -12,9 +12,17 @@ local floor                 = math.floor
 local minetest_get_gametime = minetest.get_gametime
 local get_voxel_manip       = minetest.get_voxel_manip
 
-local min1, min2, min3 = mcl_mapgen.overworld.min, mcl_mapgen.end_.min, mcl_mapgen.nether.min
-local max1, max2, max3 = mcl_mapgen.overworld.max, mcl_mapgen.end_.max, mcl_mapgen.nether.max + 128
-local CS = mcl_mapgen.CS_NODES
+local min1, min2, min3
+local max1, max2, max3
+local CS
+
+local get_local_settings = function()
+	min1, min2, min3 = mcl_mapgen.overworld.min, mcl_mapgen.end_.min, mcl_mapgen.nether.min
+	max1, max2, max3 = mcl_mapgen.overworld.max, mcl_mapgen.end_.max, mcl_mapgen.nether.max+128
+	CS = mcl_mapgen.CS_NODES
+end
+get_local_settings()
+mcl_mapgen.register_on_settings_changed(get_local_settings)
 
 local modname = minetest.get_current_modname()
 local modpath = minetest.get_modpath(modname)

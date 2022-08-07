@@ -32,9 +32,16 @@ local math_ceil        = math.ceil
 --custom mcl_vars
 local get_node = mcl_mapgen.get_far_node
 
+local min_y
+local max_y
 
-local min_y = math_max(mcl_mapgen.overworld.min, mcl_mapgen.overworld.bedrock_max) + 1
-local max_y = mcl_mapgen.overworld.max - 1
+local get_local_settings = function()
+	min_y = math_max(mcl_mapgen.overworld.min, mcl_mapgen.overworld.bedrock_max) + 1
+	max_y = mcl_mapgen.overworld.max - 1
+end
+get_local_settings()
+mcl_mapgen.register_on_settings_changed(get_local_settings)
+
 -- Calculate the number of dungeon spawn attempts
 -- In Minecraft, there 8 dungeon spawn attempts Minecraft chunk (16*256*16 = 65536 blocks).
 -- Minetest chunks don't have this size, so scale the number accordingly.

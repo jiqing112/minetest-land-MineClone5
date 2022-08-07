@@ -2,11 +2,18 @@ mcl_worlds = {}
 
 local get_connected_players = minetest.get_connected_players
 
+local min1, min2, min3
+local max1, max2, max3
+local get_local_settings = function()
+	min1, min2, min3 = mcl_mapgen.overworld.min, mcl_mapgen.end_.min, mcl_mapgen.nether.min
+	max1, max2, max3 = mcl_mapgen.overworld.max, mcl_mapgen.end_.max, mcl_mapgen.nether.max+128
+end
+get_local_settings()
+mcl_mapgen.register_on_settings_changed(get_local_settings)
+
 -- For a given position, returns a 2-tuple:
 -- 1st return value: true if pos is in void
 -- 2nd return value: true if it is in the deadly part of the void
-local min1, min2, min3 = mcl_mapgen.overworld.min, mcl_mapgen.end_.min, mcl_mapgen.nether.min
-local max1, max2, max3 = mcl_mapgen.overworld.max, mcl_mapgen.end_.max, mcl_mapgen.nether.max+128
 function mcl_worlds.is_in_void(pos)
 	local y = pos.y
 	local void = not ((y < max1 and y > min1) or (y < max2 and y > min2) or (y < max3 and y > min3))
