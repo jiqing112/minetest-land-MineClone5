@@ -25,6 +25,7 @@ if not self.has_head == true then return end
 
 	pos = vector.add(pos, head_offset)
 
+	if minetest.settings:get_bool("mcl_debug_head_code", false) then
 	minetest.add_particle({
 		pos = pos,
 		velocity = {x=0, y=0, z=0},
@@ -33,7 +34,7 @@ if not self.has_head == true then return end
 		size = 1,
 		texture = "default_dirt.png",
 	})
-
+end
 	local bone_pos = vector.new(0,0,0)
 
 	--(horizontal)

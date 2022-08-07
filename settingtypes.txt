@@ -185,3 +185,4 @@ revoke_shout_for_spammers (Revoke shout priv for spammers) bool true
 mcl_item_id_debug (Item ID Debug) bool false
 mcl_debug_struct_noise (Show Structures Perlin Noise) bool false
 mcl_debug_chunk_borders (Show Chunk Borders) bool false
+mcl_debug_head_code (Spawn dirt particles at mob head position) bool false
