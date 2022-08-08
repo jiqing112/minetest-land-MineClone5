@@ -102,6 +102,10 @@ local get_local_settings = function()
 		height_min = mcl_mapgen.overworld.bedrock_max + 2
 	end
 	height_max = mcl_worlds.layer_to_y(60)
+
+	-- Allow mods to separately override this
+	height_min = mcl_mapgen.overworld.railcorridors_height_min or height_min
+	height_max = mcl_mapgen.overworld.railcorridors_height_max or height_max
 end
 get_local_settings()
 mcl_mapgen.register_on_settings_changed(get_local_settings)
