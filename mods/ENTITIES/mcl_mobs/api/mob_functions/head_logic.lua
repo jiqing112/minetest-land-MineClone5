@@ -5,7 +5,7 @@ local vector = vector
 local degrees = function(yaw)
 	return yaw*180.0/math.pi
 end
-
+	local debug_head =  minetest.settings:get_bool("mcl_debug_head_code", false) 
 mobs.do_head_logic = function(self, dtime, player)
 	if not self.has_head == true then return end
 	local player = player or minetest.get_player_by_name("singleplayer")
@@ -24,7 +24,7 @@ mobs.do_head_logic = function(self, dtime, player)
 	local head_offset = vector.multiply(body_dir, self.head_direction_offset)
 
 	pos = vector.add(pos, head_offset)
-	local debug_head =  minetest.settings:get_bool("mcl_debug_head_code", false) 
+
 	if debug_head then
 		minetest.add_particle({
 			pos = pos,
