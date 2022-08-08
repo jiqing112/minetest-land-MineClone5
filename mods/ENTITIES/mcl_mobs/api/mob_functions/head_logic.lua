@@ -24,7 +24,8 @@ mobs.do_head_logic = function(self, dtime, player)
 	local head_offset = vector.multiply(body_dir, self.head_direction_offset)
 
 	pos = vector.add(pos, head_offset)
-	if minetest.settings:get_bool("mcl_debug_head_code", false) then
+	local debug_head =  minetest.settings:get_bool("mcl_debug_head_code", false) 
+	if debug_head then
 		minetest.add_particle({
 			pos = pos,
 			velocity = {x=0, y=0, z=0},
