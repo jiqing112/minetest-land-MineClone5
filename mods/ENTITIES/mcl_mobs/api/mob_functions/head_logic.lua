@@ -33,7 +33,7 @@ mobs.do_head_logic = function(self, dtime, player)
 			size = 1,
 			texture = "default_dirt.png",
 		})
-end
+	end
 	local bone_pos = vector.new(0,0,0)
 
 	--(horizontal)
