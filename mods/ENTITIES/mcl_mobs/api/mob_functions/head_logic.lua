@@ -26,7 +26,7 @@ mobs.do_head_logic = function(self, dtime, player)
 
 	pos = vector.add(pos, head_offset)
 
-	if debug_head == true then
+	if debug_head then
 		minetest.add_particle({
 			pos = pos,
 			velocity = {x=0, y=0, z=0},
