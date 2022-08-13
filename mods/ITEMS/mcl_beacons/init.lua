@@ -98,7 +98,7 @@ minetest.register_node("mcl_beacons:beacon_beam", {
 		}
 	},
 	pointable= false,
-	light_source = 15,
+	light_source = 14,
 	walkable = false,
 	groups = {not_in_creative_inventory=1},
 	_mcl_blast_resistance = 1200,
@@ -226,6 +226,7 @@ minetest.register_node("mcl_beacons:beacon", {
 	collisionbox = {-0.5, -0.5, -0.5, 0.5, 0.5, 0.5},
 	mesh = "mcl_beacon.b3d",
 	tiles = {"beacon_UV.png"},
+	use_texture_alpha = "clip",
 	on_construct = function(pos)
 		local meta = minetest.get_meta(pos)
 		local inv = meta:get_inventory()
@@ -333,7 +334,7 @@ minetest.register_node("mcl_beacons:beacon", {
 			end
 		end
 	end,
-	light_source = 15,
+	light_source = 14,
 	groups = {handy=1},
 	drop = "mcl_beacons:beacon",
 	sounds = mcl_sounds.node_sound_glass_defaults(),
@@ -342,9 +343,6 @@ minetest.register_node("mcl_beacons:beacon", {
 
 mesecon.register_mvps_stopper("mcl_beacons:beacon")
 mcl_wip.register_wip_item("mcl_beacons:beacon")
-
-beacon_blocklist = {"mcl_core:diamondblock","mcl_core:ironblock","mcl_core:goldblock","mcl_core:emeraldblock","mcl_nether:netheriteblock"}--this is supposed to be a global, don't change that!
-beacon_fuellist ={"mcl_core:diamond","mcl_core:emerald","mcl_core:iron_ingot","mcl_core:gold_ingot","mcl_nether:netherite_ingot"}
 
 function register_beaconblock (itemstring)--API function for other mods
 	table.insert(beacon_blocklist, itemstring)
