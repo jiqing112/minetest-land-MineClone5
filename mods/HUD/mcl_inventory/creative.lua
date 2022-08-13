@@ -34,7 +34,7 @@ minetest.register_on_mods_loaded(function()
 	for name,def in pairs(minetest.registered_items) do
 		if (not def.groups.not_in_creative_inventory or def.groups.not_in_creative_inventory == 0) and def.description and def.description ~= "" then
 			local function is_redstone(def)
-				return def.mesecons or def.groups.mesecon or def.groups.mesecon_conductor_craftable or def.groups.mesecon_effecor_off
+				return def.mesecons or def.groups.mesecon or def.groups.mesecon_conductor_craftable or def.groups.mesecon_effector_off
 			end
 			local function is_tool(def)
 				return def.groups.tool or (def.tool_capabilities and def.tool_capabilities.damage_groups == nil)
