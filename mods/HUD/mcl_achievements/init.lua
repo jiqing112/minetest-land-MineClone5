@@ -234,6 +234,20 @@ awards.register_achievement("mcl:fishyBusiness", {
 	icon = "mcl_fishing_fishing_rod.png",
 })
 
+--Triggered in mcl_beacons
+awards.register_achievement("mcl:beacon", {
+	title = S("Bring Home the Beacon"),
+	description = S("Use a beacon."),
+	icon = "beacon_achievement_icon.png",
+})
+
+awards.register_achievement("mcl:maxed_beacon", {
+	title = S("Beaconator"),
+	description = S("Use a fully powered beacon."),
+	icon = "beacon_achievement_icon.png",
+})
+
+
 -- Armor Advancements
 --[[awards.register_achievement("mcl:suitUp", {
 	title = S("Suit Up"),

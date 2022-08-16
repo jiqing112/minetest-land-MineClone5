@@ -75,3 +75,7 @@ What A Deal!=
 Successfully trade with a Villager.=
 Tactical Fishing=
 Catch a fish... without a fishing rod=
+Bring Home the Beacon=
+Use a beacon.=
+Beaconator=
+Use a fully powered beacon.=
