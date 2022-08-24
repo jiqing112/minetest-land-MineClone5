@@ -251,7 +251,7 @@ mcl_stairs.register_stair_and_slab_simple("blackstone", "mcl_blackstone:blacksto
 mcl_stairs.register_stair_and_slab_simple("blackstone_polished", "mcl_blackstone:blackstone_polished", S("Polished Blackstone Stair"), S("Polished Blackstone Slab"), S("Polished Double Blackstone Slab"))
 
 
-mcl_stairs.register_stair_and_slab_simple("blackstone_chiseled_polished", "mcl_blackstone:blackstone_chiseled_polished", S("Polished Chiseled Blackstone Stair"), S("Chiseled Polished Blackstone Slab"), S("Double Polished Chiseled Blackstone Slab"))
+mcl_stairs.register_stair_and_slab_simple("blackstone_chiseled_polished", "mcl_blackstone:blackstone_chiseled_polished", S("Chiseled Polished Blackstone Stair"), S("Chiseled Polished Blackstone Slab"), S("Double Polished Chiseled Blackstone Slab"))
 
 
 mcl_stairs.register_stair_and_slab_simple("blackstone_brick_polished", "mcl_blackstone:blackstone_brick_polished", S("Polished Blackstone Brick Stair"), S("Polished Blackstone Brick Slab"), S("Double Polished Blackstone Brick Slab"))
