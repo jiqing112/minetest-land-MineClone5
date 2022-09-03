@@ -509,8 +509,8 @@ minetest.register_craft({
 	}
 })
 
-minetest.register_alias("mcl_smoker:smoker", "mcl_furnaces:smoker")
-minetest.register_alias("mcl_smoker:smoker_active", "mcl_furnaces:smoker_active")
+minetest.register_alias("mcl_furnaces:smoker", "mcl_smoker:smoker")
+minetest.register_alias("mcl_furnaces:smoker_active", "mcl_smoker:smoker_active")
 
 -- Add entry alias for the Help
 if minetest.get_modpath("doc") then
