@@ -2,7 +2,7 @@ local modname = minetest.get_current_modname()
 local modpath = minetest.get_modpath(modname)
 local S = minetest.get_translator(modname)
 
-local chance_per_chunk = 11
+local chance_per_chunk = 600
 local noise_multiplier = 1.4
 local random_offset    = 555
 local scanning_ratio   = 0.00003
@@ -76,6 +76,28 @@ local function place(pos, rotation, pr)
 	local node_below = minetest.get_node(pos_below)
 	local nn = node_below.name,
 mcl_structures.place_schematic({pos = pos_outpost, schematic = outpost_schematic, pr = pr, on_placed = on_placed})
+	local p1 = pos
+	local p2 = vector.offset(pos,14,20,14)
+	local spawnon = {"mcl_core:stripped_oak"}
+	local sp = minetest.find_nodes_in_area_under_air(p1,p2,spawnon)
+	for _,n in pairs(minetest.find_nodes_in_area(p1,p2,{"group:wall"})) do
+		local def = minetest.registered_nodes[minetest.get_node(n).name:gsub("_%d+$","")]
+		if def and def.on_construct then
+			def.on_construct(n)
+		end
+	end
+	if sp and #sp > 0 then
+		for i=1,5 do
+			local p = sp[pr:next(1,#sp)]
+			if p then
+				minetest.add_entity(p,"mobs_mc:pillager")
+			end
+		end
+		local p = sp[pr:next(1,#sp)]
+		if p then
+			minetest.add_entity(p,"mobs_mc:evoker")
+		end
+	end
 end
 
 local function get_place_rank(pos)
@@ -90,86 +112,6 @@ local function get_place_rank(pos)
 	local other_pos_list_underground = minetest.find_nodes_in_area(p1, p2, "group:opaque", false)
 	return 10 * (#best_pos_list_surface) + 2 * (#other_pos_list_surface) + 5 * (#best_pos_list_underground) + #other_pos_list_underground
 end
-
-local function spawn_pillager(pos)
-	minetest.add_entity({x = pos.x, y = pos.y + 1, z = pos.z}, "mobs_mc:pillager")
-end
-local function spawn_evoker(pos)
-	minetest.add_entity({x = pos.x, y = pos.y + 1, z = pos.z}, "mobs_mc:evoker")
-end
-minetest.register_node("mcl_structures:birchwood", {
-	description = S("Pillager Birch Wood"),
-	_doc_items_longdesc = doc.sub.items.temp.build,
-	tiles = {"mcl_core_planks_birch.png"},
-	stack_max = 64,
-	drop = "mcl_core:birchwood",
-	groups = {handy=1,axey=1, flammable=3,wood=1,building_block=1, material_wood=1, fire_encouragement=5, fire_flammability=20},
-	sounds = mcl_sounds.node_sound_stone_defaults(),
-	is_ground_content = false,
-	_mcl_blast_resistance = 3,
-	_mcl_hardness = 2,
-	on_construct = spawn_pillager,
-})
-
-minetest.register_abm({
-	label = "Spawn pillagers",
-	nodenames = {"mcl_structures:birchwood"},
-	interval = 30,
-	chance = 3,
-	action = function(pos, node)
-		-- check the space above
-		local minetest_get_node = minetest.get_node
-		local x, y, z = pos.x, pos.y - 1, pos.z
-		local p = {x=x+6, y=y+15, z=z+6}
-		p.y = p.y + 1
-		if minetest_get_node(p).name ~= "air" then return end
-		p.y = p.y + 1
-		if minetest_get_node(p).name ~= "air" then return end
-		p.y = p.y - 1
-		local pillagers_counter = 0
-		for _, obj in pairs(minetest.get_objects_inside_radius(p, 30)) do
-			local lua_entity = obj:get_luaentity()
-			if luaentity and luaentity.name == "mobs_mc:pillager" then
-				pillagers_counter = pillagers_counter + 1
-				if pillagers_counter > 7 then return end
-			end
-		end
-		if pillagers_counter <= 8 then
-			spawn_pillager(pos)
-		end
-	end
-})
--- This is a temporary fix to the fact that totems of undying are unobtainable in survival. Minecraft Outposts dont have evokers.
---[[
-minetest.register_abm({
-	label = "Spawn evokers",
-	nodenames = {"mcl_structures:birchwood"},
-	interval = 200,
-	chance = 100,
-	action = function(pos, node)
-		-- check the space above
-		local minetest_get_node = minetest.get_node
-		local x, y, z = pos.x, pos.y - 1, pos.z
-		local p3 = {x=x+6, y=y+15, z=z+6}
-		p3.y = p3.y + 1
-		if minetest_get_node(p3).name ~= "air" then return end
-		p3.y = p3.y + 1
-		if minetest_get_node(p3).name ~= "air" then return end
-		p3.y = p3.y - 1
-		local evoker_counter = 0
-		for _, obj in pairs(minetest.get_objects_inside_radius(p3, 30)) do
-			local lua_entity = obj:get_luaentity()
-			if luaentity and luaentity.name == "mobs_mc:evoker" then
-				evoker_counter = evoker_counter + 1
-				if evoker_counter > 0 then return end
-				elseif evoker_counter == 0 then
-					spawn_evoker(pos)
-					evoker_counter = evoker_counter + 1
-			end
-		end
-	end
-})
-]]--
 
 mcl_structures.register_structure({
 	name = "pillager_outpost",
