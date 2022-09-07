@@ -510,8 +510,8 @@ minetest.register_craft({
 	}
 })
 
-minetest.register_alias("mcl_blast_furnace:blast_furnace", "mcl_furnaces:blast_furnace")
-minetest.register_alias("mcl_blast_furnace:blast_furnace_active", "mcl_furnaces:blast_furnace_active")
+minetest.register_alias("mcl_furnaces:blast_furnace", "mcl_blast_furnace:blast_furnace")
+minetest.register_alias("mcl_furnaces:blast_furnace_active", "mcl_blast_furnace:blast_furnace_active")
 
 -- Add entry alias for the Help
 if minetest.get_modpath("doc") then
