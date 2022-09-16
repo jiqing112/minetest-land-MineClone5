@@ -27,8 +27,34 @@ local DELAY				= 3 -- seconds before teleporting in Nether portal in Survival mo
 local DISTANCE_MAX			= 128
 local PORTAL				= "mcl_portals:portal"
 local OBSIDIAN				= "mcl_core:obsidian"
-local O_Y_MIN, O_Y_MAX			= max(mcl_mapgen.overworld.min, -31), min(mcl_mapgen.overworld.max, 2048)
-local N_Y_MIN, N_Y_MAX			= mcl_mapgen.nether.bedrock_bottom_min, mcl_mapgen.nether.bedrock_top_min - H_MIN
+local O_Y_MIN, O_Y_MAX
+local N_Y_MIN, N_Y_MAX
+
+local overworld_lava_max
+local nether_lava_max
+local overworld_min
+local limits
+
+local get_local_settings = function()
+	O_Y_MIN, O_Y_MAX			= max(mcl_mapgen.overworld.min, -31), min(mcl_mapgen.overworld.max, 2048)
+	N_Y_MIN, N_Y_MAX			= mcl_mapgen.nether.bedrock_bottom_min, mcl_mapgen.nether.bedrock_top_min - H_MIN
+	overworld_min				= mcl_mapgen.overworld.min
+	overworld_lava_max			= mcl_mapgen.overworld.lava_max
+	nether_lava_max				= mcl_mapgen.nether.lava_max
+	
+	limits = {
+		nether = {
+			pmin = {x=LIM_MIN, y = N_Y_MIN, z = LIM_MIN},
+			pmax = {x=LIM_MAX, y = N_Y_MAX, z = LIM_MAX},
+		},
+		overworld = {
+			pmin = {x=LIM_MIN, y = O_Y_MIN, z = LIM_MIN},
+			pmax = {x=LIM_MAX, y = O_Y_MAX, z = LIM_MAX},
+		},
+	}
+end
+get_local_settings()
+mcl_mapgen.register_on_settings_changed(get_local_settings)
 
 -- Alpha and particles
 local node_particles_allowed = minetest.settings:get("mcl_node_particles") or "none"
@@ -78,17 +104,6 @@ local is_area_protected = minetest.is_area_protected
 local get_us_time = minetest.get_us_time
 
 local dimension_to_teleport = { nether = "overworld", overworld = "nether" }
-
-local limits = {
-	nether = {
-		pmin = {x=LIM_MIN, y = N_Y_MIN, z = LIM_MIN},
-		pmax = {x=LIM_MAX, y = N_Y_MAX, z = LIM_MAX},
-	},
-	overworld = {
-		pmin = {x=LIM_MIN, y = O_Y_MIN, z = LIM_MIN},
-		pmax = {x=LIM_MAX, y = O_Y_MAX, z = LIM_MAX},
-	},
-}
 
 -- This function registers exits from Nether portals.
 -- Incoming verification performed: two nodes must be portal nodes, and an obsidian below them.
@@ -164,7 +179,7 @@ local function find_exit(p, dx, dy, dz)
 	end
 end
 
--- This functon searches Nether portal nodes whitin distance specified and checks the node
+-- This function searches Nether portal nodes within distance specified and checks the node
 local function find_exit_with_check(p, dx, dy, dz)
 	while true do
 		local pos = find_exit(p, dx, dy, dz)
@@ -181,7 +196,7 @@ local function find_exit_with_check(p, dx, dy, dz)
 	end
 end
 
--- Ping-Pong the coordinate for Fast Travelling, https://git.minetest.land/Wuzzy/MineClone2/issues/795#issuecomment-11058
+-- Ping-Pong the coordinate for Fast Traveling, https://git.minetest.land/Wuzzy/MineClone2/issues/795#issuecomment-11058
 local function ping_pong(x, m, l1, l2)
 	if x < 0 then
 		return	 l1 + abs(((x*m+l1) % (l1*4)) - (l1*2)), 	floor(x*m/l1/2)  + ((ceil(x*m/l1)+1)%2) * ((x*m)%l1)/l1
@@ -421,9 +436,9 @@ end
 
 local function get_lava_level(pos, pos1, pos2)
 	if pos.y > -1000 then
-		return max(min(mcl_mapgen.overworld.lava_max, pos2.y-1), pos1.y+1)
+		return max(min(overworld_lava_max, pos2.y-1), pos1.y+1)
 	end
-	return max(min(mcl_mapgen.nether.lava_max, pos2.y-1), pos1.y+1)
+	return max(min(nether_lava_max, pos2.y-1), pos1.y+1)
 end
 
 local function ecb_scan_area_2(blockpos, action, calls_remaining, param)
@@ -746,7 +761,7 @@ minetest.register_abm({
 			return
 		end
 
-		if lower_node_name == OBSIDIAN and pos.y >= mcl_mapgen.overworld.min and random(1, 750) == 19 then
+		if lower_node_name == OBSIDIAN and pos.y >= overworld_min and random(1, 750) == 19 then
 			local pigman_obj = minetest.add_entity(pos, "mobs_mc:pigman")
 			if pigman_obj then
 				teleport_cooloff(pigman_obj)

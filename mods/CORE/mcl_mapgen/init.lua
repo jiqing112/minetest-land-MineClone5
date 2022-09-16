@@ -394,7 +394,17 @@ minetest.register_on_generated(function(minp, maxp, chunkseed)
 	end
 end)
 
-minetest.register_on_generated = mcl_mapgen.register_chunk_generator
+local register_on_generated_old = minetest.register_on_generated
+minetest.register_on_generated = function(...)
+	minetest.log("warning", "minetest.register_on_generated() is being called by the mod '"
+		.. minetest.get_current_modname() .. "'. MineClone5's map generation system avoids using "
+		.. "this callback to work around engine map generation issues. If possible please read "
+		.. "mods/CORE/mcl_mapgen/API.md and update " .. minetest.get_current_modname()
+		.. " to use the method described from there. MineClone5 makes no promises that "
+		.. "mapgen mods will be fully compatible with it, please test your server and use at "
+		.. "your own risk.")
+	return register_on_generated_old(...)
+end
 
 function mcl_mapgen.get_far_node(p)
 	local p = p
@@ -438,6 +448,21 @@ function mcl_mapgen.get_chunk_number(pos) -- unsigned int
 		(c.y + k_positive) * k_positive_y +
 		(c.z + k_positive) * k_positive_z +
 		 c.x + k_positive
+end
+
+-- Components of this game should register functions here to update their internal
+-- state when external mods modify mapgen settings that they care about.
+local settings_changed_callbacks = {}
+function mcl_mapgen.register_on_settings_changed(callback)
+	table.insert(settings_changed_callbacks, callback)
+end
+
+-- this is to be called by external mods after modifying these settings
+-- to notify Mineclone that it needs to update local copies and whatever's based on them. 
+function mcl_mapgen.on_settings_changed()
+	for _, callback in pairs(settings_changed_callbacks) do
+		callback()
+	end
 end
 
 mcl_mapgen.minecraft_height_limit = 256

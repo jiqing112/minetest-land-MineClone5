@@ -1214,25 +1214,34 @@ if flat then
 	air_layers[#air_layers + 1] = {mcl_mapgen.nether.flat_floor, mcl_mapgen.nether.flat_ceiling} -- Flat Nether
 end
 
--- Realm barrier between the Overworld void and the End
-local barrier_min = mcl_mapgen.realm_barrier_overworld_end_min
-local barrier_max = mcl_mapgen.realm_barrier_overworld_end_max
+local barrier_min
+local barrier_max
+local void_layers
+local bedrock_layers
 
-local void_layers = {
-	{mcl_mapgen.EDGE_MIN        , mcl_mapgen.nether.min - 1   }, -- below Nether
-	{mcl_mapgen.nether.max + 129, mcl_mapgen.end_.min - 1     }, -- below End (above Nether)
-	{mcl_mapgen.end_.max + 1    , barrier_min - 1             }, -- below Realm Barrier, above End
-	{barrier_max + 1            , mcl_mapgen.overworld.min - 1}, -- below Overworld, above Realm Barrier
-}
+local get_local_settings = function()
+	-- Realm barrier between the Overworld void and the End
+	barrier_min = mcl_mapgen.realm_barrier_overworld_end_min
+	barrier_max = mcl_mapgen.realm_barrier_overworld_end_max
 
-local bedrock_layers = {}
-if not singlenode then
-	bedrock_layers = {
-		{mcl_mapgen.overworld.bedrock_min    , mcl_mapgen.overworld.bedrock_max    },
-		{mcl_mapgen.nether.bedrock_bottom_min, mcl_mapgen.nether.bedrock_bottom_max},
-		{mcl_mapgen.nether.bedrock_top_min   , mcl_mapgen.nether.bedrock_top_max   },
+	void_layers = {
+		{mcl_mapgen.EDGE_MIN        , mcl_mapgen.nether.min - 1   }, -- below Nether
+		{mcl_mapgen.nether.max + 129, mcl_mapgen.end_.min - 1     }, -- below End (above Nether)
+		{mcl_mapgen.end_.max + 1    , barrier_min - 1             }, -- below Realm Barrier, above End
+		{barrier_max + 1            , mcl_mapgen.overworld.min - 1}, -- below Overworld, above Realm Barrier
 	}
+
+	bedrock_layers = {}
+	if not singlenode then
+		bedrock_layers = {
+			{mcl_mapgen.overworld.bedrock_min    , mcl_mapgen.overworld.bedrock_max    },
+			{mcl_mapgen.nether.bedrock_bottom_min, mcl_mapgen.nether.bedrock_bottom_max},
+			{mcl_mapgen.nether.bedrock_top_min   , mcl_mapgen.nether.bedrock_top_max   },
+		}
+	end
 end
+get_local_settings()
+mcl_mapgen.register_on_settings_changed(get_local_settings)
 
 mcl_mapgen.register_mapgen_block_lvm(function(vm_context)
 	local vm, data, area, minp, maxp, chunkseed, blockseed = vm_context.vm, vm_context.data, vm_context.area, vm_context.minp, vm_context.maxp, vm_context.chunkseed, vm_context.blockseed
