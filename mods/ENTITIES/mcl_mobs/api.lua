@@ -452,12 +452,12 @@ local set_yaw = function(self, yaw, delay, dtime)
 	if math.abs(target_shortest_path) > 280*ddtime then
 		if target_shortest_path > 0 then
 			self.object:set_yaw(self.object:get_yaw()+3.6*ddtime)
-			if self.acc then
+			if self.acc and self.acc.x and self.acc.y and self.acc.z then
 				self.acc=vector.rotate_around_axis(self.acc,vector.new(0,1,0), 3.6*ddtime)
 			end
 		else
 			self.object:set_yaw(self.object:get_yaw()-3.6*ddtime)
-			if self.acc then
+			if self.acc and self.acc.x and self.acc.y and self.acc.z then
 				self.acc=vector.rotate_around_axis(self.acc,vector.new(0,1,0), -3.6*ddtime)
 			end
 		end
@@ -4409,7 +4409,7 @@ local mob_step = function(self, dtime)
 		end
 
 		--set_speed
-		if self.acc then
+		if self.acc and self.acc.x and self.acc.y and self.acc.z then
 			self.object:add_velocity(self.acc)
 		end
 	end
